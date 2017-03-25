@@ -1,13 +1,33 @@
 package com.lowson;
 
+import com.lowson.Util.Environment;
+
 public class Main {
-
     public static void main(String[] args) {
-	// write your code here
-        print();
+
+        //Step1: Environment Initialization:
+        Environment.initAllRoles();
+
+
+        /*
+        Step2: Start Simulation.
+         */
+
+
+
+        /*
+        Step3: Result output
+         */
+
+
     }
 
-    public static int print(){
-        System.out.println("adsfas"); return 1;
+    private void initEnv(){
+
+
+
     }
+
+
+
 }
