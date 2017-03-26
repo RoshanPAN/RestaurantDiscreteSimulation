@@ -3,13 +3,13 @@ package com.lowson.Role;
 import com.lowson.Util.Environment;
 import com.sun.javafx.binding.StringFormatter;
 
-import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * Created by lenovo1 on 2017/3/24.
  */
 public class Diner {
-    public static ArrayList<Diner> dinerList = new ArrayList<>();
+    public static HashMap<Integer, Diner> dinerMap = new HashMap<>();  // dinerID -> diner object
     private static int eatDuration = Environment.dinnerEatDuration;
     static int nextDinerID = 0;
 
@@ -28,7 +28,7 @@ public class Diner {
         this.arrivalTime = arrivalTime;
         this.table = null;
         this.myOrder = new Order(numBurger, numFries, numCoke, numSundae, dinerID);
-        dinerList.add(this);
+        dinerMap.put(dinerID, this);
     }
     public boolean isArrived() {
         assert getState() == DinerState.NOT_ARRIVED;

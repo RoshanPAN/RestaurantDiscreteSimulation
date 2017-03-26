@@ -1,5 +1,6 @@
 package com.lowson.Scheduler;
 
+import com.lowson.Role.Diner;
 import com.lowson.Role.Food;
 import com.lowson.Role.Machine;
 import com.lowson.Role.Order;
@@ -61,19 +62,18 @@ public abstract class Scheduler {
        assert curOrder != null;
        assert task != null;
 
-//       HashMap<Food, Integer> taskCntMap = getTaskCntMap(curOrder, taskList);
+        //HashMap<Food, Integer> taskCntMap = getTaskCntMap(curOrder, taskList);
        int taskCnt = getTaskCnt(curOrder, task);
        return new Schedule(curOrder, task, machine,taskCnt);
     }
-
-
-
 
     /*
     At the start of each minute, put all orders in failedScheduleOrderPool into orderPool
      */
     public void resetOrderPool() {
-        orderPool.addAll(failedScheduleOrderPool);
+        for(Order o: failedScheduleOrderPool){
+            orderPool.offer(o);
+        }
     }
 
     /*
@@ -83,6 +83,18 @@ public abstract class Scheduler {
 
     public void rescheduleForNextRound(Order order) {
         failedScheduleOrderPool.offer(order);
+    }
+
+    public void finishExecution(Schedule schedule){
+        Order order = schedule.getOrder();
+        order.addFinishedFood(schedule.getTask(), schedule.getTaskCnt());
+        availMachines.add(schedule.getMachine());  // release machine
+        if(order.isReady()){
+            Diner diner = Diner.dinerMap.get(order.getDinerID());
+            diner.notifyAll();
+        }else{
+            orderPool.offer(order);
+        }
     }
 
     protected abstract Order getOrder();

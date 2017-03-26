@@ -8,8 +8,8 @@ import java.util.HashMap;
 public class Order {
     static ArrayList<Order> orderList = new ArrayList<>();
     static int nextOrderID = 0;
-    int orderID;
-    int dinerID;
+    private int orderID;
+    private int dinerID;
     HashMap<Food, Integer> orderedCnt = new HashMap<>();
     HashMap<Food, Integer> finishedCnt = new HashMap<>();
 
@@ -54,5 +54,9 @@ public class Order {
     public String toString(){
         return String.format("Order#%-4d\n -Ordered:%s\n -Finished: %s\n",
                 orderID, orderedCnt, finishedCnt);
+    }
+
+    public int getDinerID() {
+        return dinerID;
     }
 }

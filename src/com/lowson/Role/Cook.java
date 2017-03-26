@@ -1,5 +1,8 @@
 package com.lowson.Role;
 
+import com.lowson.Scheduler.Schedule;
+import com.lowson.Util.Environment;
+
 import java.util.ArrayList;
 
 /**
@@ -21,15 +24,6 @@ public class Cook {
         cookList.add(this);
     }
 
-    //TODO
-    public boolean isFoodProcessingFinished() {
-
-    }
-
-    private boolean getEndWorkTime(){
-
-    }
-
     public int getID(){ return cookID; }
 
 
@@ -49,13 +43,21 @@ public class Cook {
         this.machine = machine;
     }
 
-
-
     public int getStartWorkingTime() {
         return startWorkingTime;
     }
 
     public void setStartWorkingTime(int startWorkingTime) {
         this.startWorkingTime = startWorkingTime;
+    }
+
+    public boolean isTaskFinished(Schedule schedule) {
+        int cookTimePerFood = schedule.getTask().getCookTime();
+        int taskCnt = schedule.getTaskCnt();
+        int endTime = this.startWorkingTime + cookTimePerFood * taskCnt;
+        if(Environment.clock.getCurrentTime() < endTime){
+            return false;
+        }
+        return true;
     }
 }

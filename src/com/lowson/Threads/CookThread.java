@@ -2,19 +2,18 @@ package com.lowson.Threads;
 
 import com.lowson.Role.Cook;
 import com.lowson.Role.CookState;
-import com.lowson.Role.Machine;
 import com.lowson.Scheduler.Schedule;
-import com.lowson.Scheduler.Scheduler;
 import com.lowson.Util.Environment;
 import com.lowson.Util.RelativeTimeClock;
+
+import static com.lowson.Util.Environment.scheduler;
 
 /**
  * Created by lenovo1 on 2017/3/24.
  */
 public class CookThread extends Thread{
-    private Cook cook;
+    private final Cook cook;
     private RelativeTimeClock clock;
-    private static Scheduler scheduler = Environment.scheduler;
 
     public CookThread(Cook cook){
         this.cook = cook;
@@ -24,14 +23,14 @@ public class CookThread extends Thread{
     @Override
     public void run() {
         Schedule schedule;
-        Machine machine;
         boolean isSchedulingSuccessful;
         try{
             while(!this.isInterrupted()){
                 // Try to get a schedule from scheduler
+                schedule = null;
                 isSchedulingSuccessful = false;
                 cook.setState(CookState.IDLE);
-                while(!this.isInterrupted() &&  isSchedulingSuccessful == false)
+                while(!this.isInterrupted() && !isSchedulingSuccessful)
                 {
                     // Try to get a work schedule(Food to prepare + Machine to work on)
                     synchronized (scheduler)
@@ -39,27 +38,33 @@ public class CookThread extends Thread{
                         schedule = scheduler.getSchedule();
                     }
                     synchronized (cook){
-                        if(schedule == null) // no schedule available
+                        if(schedule == null) {// no schedule available
                             cook.wait();
+                        }else{
+                            isSchedulingSuccessful = true;
+                        }
                     }
                 }
+                assert isSchedulingSuccessful;
 
                 // Working on the machine
-                cook.setState(CookState.WORK_ON_MACHINE);
+                cook.setState(CookState.WORKING);
                 cook.setStartWorkingTime(Environment.clock.getCurrentTime());
-                while(!this.isInterrupted() && isSchedulingSuccessful && cook.isFoodProcessingFinished() ){
+                while(!this.isInterrupted() && !cook.isTaskFinished(schedule)){
                     synchronized (cook){
                         cook.wait();
                     }
                 }
 
                 // Finish ->
-                //  Release machine
-                //  Notify customer.
-                //      Case 1. Serve food to customer.
-                //      Case 2. Return the order to scheduler.
-
-
+                //  Notify scheduler:
+                //      1. Release machine
+                //      2. do sth about order
+                //          Case 1. order finished, Serve food to customer.
+                //          Case 2. order not finished, put back into orderPool
+                synchronized (scheduler){
+                    scheduler.finishExecution(schedule);
+                }
 
             }
         }catch (InterruptedException ie){

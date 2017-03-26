@@ -24,7 +24,7 @@ public class Schedule {
         return order;
     }
 
-    public int getTaskCnt(Food food){
+    public int getTaskCnt(){
         return taskCnt;
     }
 
