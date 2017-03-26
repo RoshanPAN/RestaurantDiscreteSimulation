@@ -3,38 +3,55 @@ package com.lowson.Util;
 import com.lowson.Role.Cook;
 import com.lowson.Role.Diner;
 import com.lowson.Role.Table;
+import com.lowson.Scheduler.Scheduler;
+import com.lowson.Scheduler.SimpleScheduler;
+import com.lowson.Threads.CookThread;
+import com.lowson.Threads.DinerThread;
+
+import java.util.LinkedList;
 
 /**
  * Created by lenovo1 on 2017/3/25.
  */
 public class Environment {
-    static RelativeTimeClock clock;
+    public static final int SimulationDuration = 120;
+    public static final Scheduler scheduler = SimpleScheduler.getInstance();
+    public static RelativeTimeClock clock;
+    public static final LinkedList<Table> availTables = new LinkedList<>();
+    public static final LinkedList<CookThread> cookThreadPool = new LinkedList<>();
+    public static final LinkedList<DinerThread> dinerThreadPool = new LinkedList<>();
+    public static int num_dinner;
+    public static int num_table;
+    public static int num_cook;
+    public static int dinnerEatDuration = 30;
 
     public void initClock(){
         clock = RelativeTimeClock.getInstance();
-        clock.initClock(Config.SimulationDuration);
+        clock.initClock(SimulationDuration);
 //        clock.initClock(0, Conf.SimulationDuration, 1);
     }
 
     public static void initAllRoles(){
         RestaurantInputReader reader = new RestaurantInputReader(System.in);
-        int num_dinner = reader.readLineAsNum();
-        int num_table = reader.readLineAsNum();
-        int num_cook = reader.readLineAsNum();
+        num_dinner = reader.readLineAsNum();
+        num_table = reader.readLineAsNum();
+        num_cook = reader.readLineAsNum();
         // Diner
         reader.readLinesAsDiner();
         assert Diner.dinerList.size() == num_dinner;
 
         // Cook
+        Cook c;
         for(int i = 0; i < num_cook; i++){
-            new Cook();
+            c = new Cook();
         }
         // Machine - enum
         // Table
+        Table t;
         for(int i = 0; i < num_table; i++){
-            new Table();
+            t = new Table();
+            availTables.offer(t);
         }
-
     }
 
     public static void initThreads(){

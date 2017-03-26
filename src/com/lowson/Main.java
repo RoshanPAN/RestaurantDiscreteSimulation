@@ -14,7 +14,6 @@ public class Main {
          */
 
 
-
         /*
         Step3: Result output
          */

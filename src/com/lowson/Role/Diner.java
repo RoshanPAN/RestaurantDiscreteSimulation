@@ -1,5 +1,6 @@
 package com.lowson.Role;
 
+import com.lowson.Util.Environment;
 import com.sun.javafx.binding.StringFormatter;
 
 import java.util.ArrayList;
@@ -9,26 +10,42 @@ import java.util.ArrayList;
  */
 public class Diner {
     public static ArrayList<Diner> dinerList = new ArrayList<>();
+    private static int eatDuration = Environment.dinnerEatDuration;
     static int nextDinerID = 0;
+
     private int dinerID;
     private int arrivalTime;
+    private Table table;
     private Order myOrder;
     private DinerState state;
+    private int startEatTime;
+
 
     public Diner(int arrivalTime, int numBurger, int numFries, int numCoke, int numSundae){
         this.dinerID = nextDinerID;
         nextDinerID ++;
         state = DinerState.NOT_ARRIVED;
         this.arrivalTime = arrivalTime;
+        this.table = null;
         this.myOrder = new Order(numBurger, numFries, numCoke, numSundae, dinerID);
         dinerList.add(this);
     }
 
-    public Order myOrder(){
-        return this.myOrder;
+    public boolean isFinished(){
+        assert getOrder().isReady();
+        if(Environment.clock.getCurrentTime() < startEatTime + eatDuration){
+            return false;
+        }
+        return true;
     }
 
+    public void occupyTable(Table t) {
+        this.table = t;
+    }
 
+    public Order getOrder(){
+        return this.myOrder;
+    }
 
     public int getID(){
         return this.dinerID;
@@ -42,11 +59,24 @@ public class Diner {
         this.state = state;
     }
 
+    public void setStartEatTime(int startEatTime) {
+        this.startEatTime = startEatTime;
+    }
+
     @Override
     public String toString(){
         StringBuilder builder = new StringBuilder();
         builder.append(StringFormatter.format("Diner#%03d: Arrived@%dmin, ordered %s",
                 dinerID, arrivalTime, myOrder.toString()));
         return builder.toString();
+    }
+
+
+    public Table getTable() {
+        return table;
+    }
+
+    public void setTable(Table table) {
+        this.table = table;
     }
 }

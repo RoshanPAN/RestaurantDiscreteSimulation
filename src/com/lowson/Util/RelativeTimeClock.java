@@ -30,7 +30,6 @@ public class RelativeTimeClock{
         this.timeUnit = timeUnit;
     }
 
-
     public int getCurrentTime(){
         return this.currentTime;
     }
