@@ -5,7 +5,6 @@ import com.lowson.Role.Order;
 import com.lowson.Util.Environment;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedList;
 
 /**
@@ -49,12 +48,12 @@ public class SimpleScheduler extends Scheduler{
         // do nothing.
     }
 
-    @Override
     /*
-     */
-    protected void applyTaskCntLogic(HashMap<Food, Integer> taskCntmap, Order order, ArrayList<Food> taskList) {
-        int cnt;
-
+    Task count = Prepare all the foods for the 1st task.
+    */
+    @Override
+    protected int getTaskCnt(Order curOrder, Food task) {
+        return curOrder.getNotPreparedCnt(task);
     }
 
 

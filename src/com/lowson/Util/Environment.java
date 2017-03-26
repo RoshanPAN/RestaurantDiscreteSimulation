@@ -9,7 +9,6 @@ import com.lowson.Scheduler.SimpleScheduler;
 import com.lowson.Threads.CookThread;
 import com.lowson.Threads.DinerThread;
 
-import java.util.HashSet;
 import java.util.LinkedList;
 
 /**
@@ -20,7 +19,6 @@ public class Environment {
     public static final Scheduler scheduler = SimpleScheduler.getInstance();
     public static RelativeTimeClock clock;
     public static final LinkedList<Table> availTables = new LinkedList<>();
-    public static final HashSet<Machine> availMachines = new HashSet<>();
     public static final LinkedList<CookThread> cookThreadPool = new LinkedList<>();
     public static final LinkedList<DinerThread> dinerThreadPool = new LinkedList<>();
     public static int num_dinner;
@@ -48,9 +46,10 @@ public class Environment {
         for(int i = 0; i < num_cook; i++){
             c = new Cook();
         }
+
         // Machine - enum
         for(Machine m: Machine.values()){
-            availMachines.add(m);
+            scheduler.availMachines.add(m);
         }
 
         // Table

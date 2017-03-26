@@ -1,35 +1,36 @@
 package com.lowson.Scheduler;
 
 import com.lowson.Role.Food;
+import com.lowson.Role.Machine;
 import com.lowson.Role.Order;
-
-import java.util.ArrayList;
-import java.util.HashMap;
 
 /**
  * Created by lenovo1 on 2017/3/26.
  */
 public class Schedule {
     private Order order;
-    private ArrayList<Food> taskList;
-    private HashMap<Food, Integer> taskCntmap;
+    private Food task;
+    private Machine machine;
+    private int taskCnt;
 
-    public Schedule(Order order, ArrayList<Food> taskList, HashMap<Food, Integer> taskCntmap){
+    public Schedule(Order order, Food task, Machine machine, int taskCnt){
         this.order = order;
-        this.taskList = taskList;
-        this.taskCntmap  = taskCntmap;
-    }
-
-    public ArrayList<Food> getTaskList() {
-        return taskList;
-    }
-
-
-    public int getTaskCnt(Food food){
-        return taskCntmap.get(food);
+        this.machine = machine;
+        this.task = task;
+        this.taskCnt = taskCnt;
     }
 
     public Order getOrder() {
         return order;
     }
+
+    public int getTaskCnt(Food food){
+        return taskCnt;
+    }
+
+    public Machine getMachine() {
+        return machine;
+    }
+
+    public Food getTask() { return task; }
 }
