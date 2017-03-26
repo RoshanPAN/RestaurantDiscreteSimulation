@@ -1,6 +1,7 @@
 package com.lowson.Threads;
 
 import com.lowson.Role.Diner;
+import com.lowson.Role.DinerState;
 import com.lowson.Util.Environment;
 import com.lowson.Util.RelativeTimeClock;
 
@@ -22,7 +23,8 @@ public class ClockThread implements Runnable{
              */
             //TODO check the ordering of updates here after cook & diner implementation
             try {
-                Environment.availTables.notifyAll(); // arrived diner try to occupy table & start to eat
+                Environment.scheduler.resetOrderPool();
+                Environment.availTables.notifyAll(); // arrived diner try to occupy empty table & submit order
                 updateCooks(); // cook try to work
                 updateDiners(); // diner try to
                 Thread.sleep(100); // InterruptedException
@@ -49,6 +51,7 @@ public class ClockThread implements Runnable{
         synchronized (Diner.dinerList){
             for(Diner d: Diner.dinerList){
                 synchronized (d){
+                    if(d.getState() == DinerState.LEFT) continue;
                     d.notifyAll();
                 }
             }

@@ -30,8 +30,15 @@ public class Diner {
         this.myOrder = new Order(numBurger, numFries, numCoke, numSundae, dinerID);
         dinerList.add(this);
     }
+    public boolean isArrived() {
+        assert getState() == DinerState.NOT_ARRIVED;
+        if(Environment.clock.getCurrentTime() < this.arrivalTime){
+            return false;
+        }
+        return true;
+    }
 
-    public boolean isFinished(){
+    public boolean isFinishedEat(){
         assert getOrder().isReady();
         if(Environment.clock.getCurrentTime() < startEatTime + eatDuration){
             return false;
@@ -79,4 +86,6 @@ public class Diner {
     public void setTable(Table table) {
         this.table = table;
     }
+
+
 }

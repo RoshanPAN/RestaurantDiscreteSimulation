@@ -46,6 +46,10 @@ public class Order {
         finishedCnt.put(food, finishedCnt.get(food) + n);
     }
 
+    public int getNotPreparedCnt(Food food){
+        return orderedCnt.get(food) - finishedCnt.get(food);
+    }
+
     @Override
     public String toString(){
         return String.format("Order#%-4d\n -Ordered:%s\n -Finished: %s\n",

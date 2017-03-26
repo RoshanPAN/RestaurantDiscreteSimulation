@@ -16,7 +16,7 @@ import static com.lowson.Util.Environment.availTables;
 public class DinerThread extends Thread {
     Diner diner;
     RelativeTimeClock clock;
-    Scheduler scheduler = Environment.scheduler;
+    private static Scheduler scheduler = Environment.scheduler;
     private boolean isThreadFinished;
 
     public DinerThread(Diner diner){
@@ -28,6 +28,16 @@ public class DinerThread extends Thread {
     @Override
     public void run() {
         try {
+            // dinner not arrived
+            diner.setState(DinerState.NOT_ARRIVED);
+            synchronized (diner)
+            {
+                while(diner.isArrived()){
+                    diner.wait();
+                }
+            }
+
+
             // wait for an table to sit down
             diner.setState(DinerState.WAIT_FOR_TABLE);
             synchronized (availTables)
@@ -37,6 +47,7 @@ public class DinerThread extends Thread {
                 }
                 diner.setTable(availTables.peek());
             }
+
             // Wait for food to be served
             Order myOrder = diner.getOrder();
             scheduler.submitOrder(myOrder);
@@ -47,14 +58,16 @@ public class DinerThread extends Thread {
                     diner.wait();
                 }
             }
+
             // Start eat
             diner.setState(DinerState.EATING);
             diner.setStartEatTime(clock.getCurrentTime());
             synchronized (diner){
-                while(!Thread.currentThread().isInterrupted() && !diner.isFinished()){
+                while(!Thread.currentThread().isInterrupted() && !diner.isFinishedEat()){
                     diner.wait();
                 }
             }
+
             // Free table & left restaurant
             synchronized (availTables){
                 availTables.offer(diner.getTable());
