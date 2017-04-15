@@ -49,8 +49,9 @@ public class CookThread extends Thread{
 
                 // Working on the machine
                 cook.setState(CookState.WORKING);
+                cook.setSchedule(schedule);
                 cook.setStartWorkingTime(Environment.clock.getCurrentTime());
-                while(!this.isInterrupted() && !cook.isTaskFinished(schedule)){
+                while(!this.isInterrupted() && !cook.isTaskFinished()){
                     synchronized (cook){
                         cook.wait();
                     }
@@ -64,6 +65,7 @@ public class CookThread extends Thread{
                 //          Case 2. order not finished, put back into orderPool
                 synchronized (scheduler){
                     scheduler.finishExecution(schedule);
+                    cook.setSchedule(null);
                 }
 
             }

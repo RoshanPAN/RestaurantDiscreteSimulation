@@ -14,14 +14,15 @@ public class Cook {
 
     private int cookID;
     private CookState state;
-    private Machine machine;
     private int startWorkingTime;
+    private Schedule schedule;
 
     public Cook(){
         cookID = nextCookID;
         state = CookState.IDLE;
         nextCookID = nextCookID + 1;
         cookList.add(this);
+        schedule = null;
     }
 
     public int getID(){ return cookID; }
@@ -35,14 +36,6 @@ public class Cook {
         this.state = state;
     }
 
-    public Machine getMachine() {
-        return machine;
-    }
-
-    public void setMachine(Machine machine) {
-        this.machine = machine;
-    }
-
     public int getStartWorkingTime() {
         return startWorkingTime;
     }
@@ -51,7 +44,7 @@ public class Cook {
         this.startWorkingTime = startWorkingTime;
     }
 
-    public boolean isTaskFinished(Schedule schedule) {
+    public boolean isTaskFinished() {
         int cookTimePerFood = schedule.getTask().getCookTime();
         int taskCnt = schedule.getTaskCnt();
         int endTime = this.startWorkingTime + cookTimePerFood * taskCnt;
@@ -59,5 +52,9 @@ public class Cook {
             return false;
         }
         return true;
+    }
+
+    public void setSchedule(Schedule schedule) {
+        this.schedule = schedule;
     }
 }

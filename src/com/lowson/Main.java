@@ -18,15 +18,6 @@ public class Main {
         Step3: Result output
          */
 
-
     }
-
-    private void initEnv(){
-
-
-
-    }
-
-
 
 }

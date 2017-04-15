@@ -14,6 +14,7 @@ public class Schedule {
     private int taskCnt;
 
     public Schedule(Order order, Food task, Machine machine, int taskCnt){
+        assert task.getCorrespondingMachine() == machine;
         this.order = order;
         this.machine = machine;
         this.task = task;

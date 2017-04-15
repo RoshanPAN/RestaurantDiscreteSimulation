@@ -19,12 +19,17 @@ public class RelativeTimeClock{
         private final static RelativeTimeClock clock = new RelativeTimeClock();
     }
 
+    public void initClock(){
+        this.initClock(Environment.SimulationDuration);
+//        clock.initClock(0, Conf.SimulationDuration, 1);
+    }
+
     // Initialize clock
-    public void initClock(int duration){
+    private void initClock(int duration){
         initClock(0, duration, 1);
     }
 
-    public void initClock(int startTime, int duration, int timeUnit){
+    private void initClock(int startTime, int duration, int timeUnit){
         this.currentTime = startTime;
         this.endTime = duration + startTime;
         this.timeUnit = timeUnit;

@@ -33,6 +33,10 @@ public class SimpleScheduler extends Scheduler{
     @Override
     // FIFO
     public void submitOrder(Order order) {
+        if(orderPool.contains(order)){
+            throw new UnexpectedBehaviorException("");
+        }
+
         orderPool.offerLast(order);
         assert orderPool.size() <= Environment.num_table;
     }
