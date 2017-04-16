@@ -49,7 +49,6 @@ public class Cook {
     }
 
     public boolean isScheduleFinished() {
-        // TODO
         if(schedule == null)
             throw new UnexpectedBehaviorException("Checking Schedule status when no schedule set");
 

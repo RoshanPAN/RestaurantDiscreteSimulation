@@ -73,19 +73,24 @@ public class CookThread extends Thread{
                             continue;
                         }
                         // If get a machine, work on this machine until this food in current task is finished.
+                        cook.setState(CookState.WORKING);
                         System.out.println(String.format("[Cook Work on machine] -Cook: %s. \n    -Machine:%s,   -Task:%s",
                                 cook.toString(),curMachine.toString(), curTask.toString()));
-                        cook.setState(CookState.WORKING);
                         cook.setStartWorkingTime(Environment.clock.getCurrentTime());
                         while(!this.isInterrupted() &&
                                 Environment.clock.getCurrentTime() < cook.getStartWorkingTime() + curTask.getProcessingTime()){
+                            System.out.println(String.format("Cook#%d  %d<%d",
+                                    cook.getID(), Environment.clock.getCurrentTime(), cook.getStartWorkingTime() + curTask.getProcessingTime()));
                             cook.wait();
                         }
                         // Release Machine and Remove task
-                        scheduler.releaseMachine(curMachine);
+                        synchronized (scheduler){
+                            scheduler.releaseMachine(curMachine);
+                        }
                         cook.setFinishedTask(curTask);
                         System.out.println(String.format("[Cook finish current Task.] -Cook: %s. \n    -Machine:%s,   -Task:%s",
                                 cook.toString(),curMachine.toString(), curTask.toString()));
+                        cook.setStartWorkingTime(-1);
                     }
                 }
 

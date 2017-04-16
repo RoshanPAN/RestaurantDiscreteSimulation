@@ -19,7 +19,7 @@ public class ClockThread implements Runnable{
     public void run() {
         System.out.println(String.format("[Clock Thread Start] %s", clock));
         // Before end time, exists as a time provider.
-        while(clock.getCurrentTime() < clock.getEndTime()){
+        while(!isAllDinerFinished()){
             /*
                 At the end of time = 0,     some cook finish cooking for an order and served food to diner,
                 At the start of time = 1,   some dinner is served and left.(some table is freed by dinner).
@@ -30,7 +30,9 @@ public class ClockThread implements Runnable{
             try {
                 // threads working
                 updateCooks(CookState.WORKING);
-                sleep(10);
+                sleep(5);
+                updateCooks(CookState.WAIT_FOR_MACHINE);
+                sleep(5);
                 updateDiners(DinerState.EATING);
                 sleep(10);
                 synchronized (Environment.availTables){
@@ -47,6 +49,7 @@ public class ClockThread implements Runnable{
                     System.out.println("[Clock] Wait for other threads to be blocked.");
                     sleep(30); // InterruptedException
                 }
+                System.out.println(Environment.scheduler.availMachines.toString());
                 clock.increment();
                 System.out.println("[Clock]" + clock.toString());
             } catch (InterruptedException e) {
@@ -58,10 +61,20 @@ public class ClockThread implements Runnable{
 //            if(t.getState() == Thread.State.TERMINATED) continue;
 //            t.interrupt();
 //        }
-//        for(CookThread t: Environment.cookThreadPool){
-//            if(t.getState() == Thread.State.TERMINATED) continue;
-//            t.interrupt();
-//        }
+        for(CookThread t: Environment.cookThreadPool){
+            if(t.getState() == Thread.State.TERMINATED) continue;
+            t.interrupt();
+        }
+    }
+
+    private boolean isAllDinerFinished() {
+        boolean isAllFinished = true;
+        for(Diner d: Environment.dinerList){
+            if(d.getState() != DinerState.LEFT){
+                isAllFinished = false;
+            }
+        }
+        return isAllFinished;
     }
 
     private boolean isAllThreadBlockedOrFinished() {
