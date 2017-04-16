@@ -1,22 +1,27 @@
 package com.lowson.Scheduler;
 
+import com.lowson.Exception.UnexpectedBehaviorException;
 import com.lowson.Role.Food;
 import com.lowson.Role.Order;
+import com.lowson.Role.Task;
 import com.lowson.Util.Environment;
 
-import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedList;
 
 /**
  * Created by lenovo1 on 2017/3/25.
  */
 public class SimpleScheduler extends Scheduler{
-    LinkedList<Order> orderPool;
+//    LinkedList<Order> orderPool;
 
     private SimpleScheduler(){
         super();
         orderPool = new LinkedList<>();
-        failedScheduleOrderPool = new LinkedList<>();
+        for(Food f: Food.values()){
+            workLoadStats.put(f, 0);
+        }
     }
 
     // Singleton - IoDH
@@ -33,32 +38,41 @@ public class SimpleScheduler extends Scheduler{
     @Override
     // FIFO
     public void submitOrder(Order order) {
-        if(orderPool.contains(order)){
+        updateWordLoad(order, true);
+        LinkedList<Order> op = (LinkedList<Order>) this.orderPool;
+        if(op.contains(order)){
             throw new UnexpectedBehaviorException("");
         }
-
-        orderPool.offerLast(order);
-        assert orderPool.size() <= Environment.num_table;
+        op.offerLast(order);
+        assert op.size() <= Environment.num_table;
     }
 
     @Override
-    // FIFO
-    protected Order getOrder() {
-        return this.orderPool.pollFirst();
-    }
-
-    @Override
-    protected void applyTaskOrderingLogic(ArrayList<Food> taskList) {
-        // do nothing.
-    }
-
     /*
-    Task count = Prepare all the foods for the 1st task.
-    */
-    @Override
-    protected int getTaskCnt(Order curOrder, Food task) {
-        return curOrder.getNotPreparedCnt(task);
+    FIFO
+     */
+    protected Order getOrder() {
+        return ((LinkedList<Order>)this.orderPool).pollFirst();
     }
 
+    // Ordering the tasks according to  work load statistics(currently submitted order).
+    @Override
+    protected void applyTaskOrderingLogic(LinkedList<Task> taskList){
+        HashSet<Task> taskSet = new HashSet<>(taskList);
+        System.out.println(taskList);
+        System.out.println(workLoadStats);
+        Collections.sort(taskList, (a, b) -> workLoadStats.get(a.getFood()) > workLoadStats.get(b.getFood()) ?
+                        -1 : (workLoadStats.get(a.getFood()) == workLoadStats.get(b.getFood()) ? 0 : 1));
+        System.out.println(taskList);
+        System.out.println(workLoadStats);
+    }
 
+    @Override
+    public String toString() {
+        StringBuilder b = new StringBuilder();
+        b.append(String.format("[SimpleScheduler] \n    -Available Machine: %s, \n    -Order: %s",
+                availMachines.toString(), orderPool.toString()));
+        b.append(String.format("\n    -WorkLoad: %s", workLoadStats.toString()));
+        return b.toString();
+    }
 }

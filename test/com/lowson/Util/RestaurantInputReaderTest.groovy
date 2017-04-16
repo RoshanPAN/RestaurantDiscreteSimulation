@@ -5,13 +5,8 @@ package com.lowson.Util
  */
 class RestaurantInputReaderTest extends GroovyTestCase {
     void testInputReader(){
-        RestaurantInputReader reader = new RestaurantInputReader(fr);
-
-        println br.readLine()
-        println br.readLine()
-        println br.readLine()
-        println br.readLine()
-        println br.readLine()
+        RestaurantInputReader reader = new RestaurantInputReader("./resource/data1.txt");
+        printf  reader.readLineAsNum().toString()
 
     }
 }

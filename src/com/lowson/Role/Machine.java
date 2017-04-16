@@ -31,7 +31,7 @@ public enum Machine {
 
     @Override
     public String toString(){
-        return String.format("%s(%dmin/)", foodMachineName, cookTime);
+        return String.format("%s(%dmin)", foodMachineName, cookTime);
     }
 
 }

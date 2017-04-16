@@ -3,8 +3,9 @@ package com.lowson.Util;
 import com.lowson.Role.Diner;
 
 import java.io.BufferedReader;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.IOException;
+import java.util.StringTokenizer;
 
 /**
  * Created by lenovo1 on 2017/3/25.
@@ -13,31 +14,30 @@ public class RestaurantInputReader {
     BufferedReader br =null;
 
     public RestaurantInputReader(String fileName)
-            throws FileNotFoundException {
+            throws IOException {
         FileReader fr = new FileReader(fileName);
         br = new BufferedReader(fr);
-        // parse content
-
-
     }
 
     //TODO
-    public int readLineAsNum(){
-        int num = 0;
-
-        return num;
+    public int readLineAsNum() throws IOException {
+        return Integer.parseInt(br.readLine());
     }
 
-    public Diner readLinesAsDiner(){
-        Diner d = null;
-        // read until there is no valid line in the file
-        // TODO
+    public Diner readLinesAsDiner() throws IOException {
+        String s = br.readLine();
+        if (s == null){
+            return null;
+        }
 
+        StringTokenizer tokenizer = new StringTokenizer(s);
+        int arrival_time = Integer.parseInt(tokenizer.nextToken());
+        int num_burger = Integer.parseInt(tokenizer.nextToken());
+        int num_fry = Integer.parseInt(tokenizer.nextToken());
+        int num_coke = Integer.parseInt(tokenizer.nextToken());
+        int num_sundane = Integer.parseInt(tokenizer.nextToken());
+        Diner d = new Diner(arrival_time, num_burger, num_fry, num_coke, num_sundane);
+        System.out.println(d);
         return d;
-    }
-
-    public boolean hashNext() {
-        // TODO
-        return false;
     }
 }

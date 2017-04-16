@@ -1,7 +1,6 @@
 package com.lowson.Threads;
 
-import com.lowson.Role.Cook;
-import com.lowson.Role.CookState;
+import com.lowson.Role.*;
 import com.lowson.Scheduler.Schedule;
 import com.lowson.Util.Environment;
 import com.lowson.Util.RelativeTimeClock;
@@ -12,7 +11,7 @@ import static com.lowson.Util.Environment.scheduler;
  * Created by lenovo1 on 2017/3/24.
  */
 public class CookThread extends Thread{
-    private final Cook cook;
+    public final Cook cook;
     private RelativeTimeClock clock;
 
     public CookThread(Cook cook){
@@ -20,11 +19,13 @@ public class CookThread extends Thread{
         this.clock = RelativeTimeClock.getInstance();
     }
 
-    @Override
+//    @Override
     public void run() {
+        System.out.println(String.format("[Cook Thread Start] %s", cook));
         Schedule schedule;
         boolean isSchedulingSuccessful;
         try{
+            System.out.println("[Cook Wait for Scheduling] " + cook.toString());
             while(!this.isInterrupted()){
                 // Try to get a schedule from scheduler
                 schedule = null;
@@ -42,32 +43,65 @@ public class CookThread extends Thread{
                             cook.wait();
                         }else{
                             isSchedulingSuccessful = true;
+                            cook.setSchedule(schedule);
                         }
                     }
                 }
                 assert isSchedulingSuccessful;
+                schedule.getOrder().setState(OrderState.PROCESSING);
 
-                // Working on the machine
-                cook.setState(CookState.WORKING);
-                cook.setSchedule(schedule);
-                cook.setStartWorkingTime(Environment.clock.getCurrentTime());
-                while(!this.isInterrupted() && !cook.isTaskFinished()){
+                // Try to get idel machine from scheduler and finish Task one by one
+                Machine curMachine = null;
+                Task curTask = null;
+                while(!this.isInterrupted() && !schedule.isAllTaskFinished()){
+                    // Get a machine
+                    System.out.println("[Cook Wait for Machine] " + cook.toString());
+                    cook.setState(CookState.WAIT_FOR_MACHINE);
+                    synchronized (scheduler){
+                        for(Task task: cook.getSchedule().getTaskList()){
+                            curMachine = scheduler.getAvailableMachine(task.getFood().getCorrespondingMachine());
+                            if(curMachine != null) {
+                                curTask = task;
+                                break;
+                            }
+                        }
+                    }
+
                     synchronized (cook){
-                        cook.wait();
+                        if(curMachine == null){ // If failed to get machine, wait and retry
+                            cook.wait();
+                            continue;
+                        }
+                        // If get a machine, work on this machine until this food in current task is finished.
+                        System.out.println(String.format("[Cook Work on machine] -Cook: %s. \n    -Machine:%s,   -Task:%s",
+                                cook.toString(),curMachine.toString(), curTask.toString()));
+                        cook.setState(CookState.WORKING);
+                        cook.setStartWorkingTime(Environment.clock.getCurrentTime());
+                        while(!this.isInterrupted() &&
+                                Environment.clock.getCurrentTime() < cook.getStartWorkingTime() + curTask.getProcessingTime()){
+                            cook.wait();
+                        }
+                        // Release Machine and Remove task
+                        scheduler.releaseMachine(curMachine);
+                        cook.setFinishedTask(curTask);
+                        System.out.println(String.format("[Cook finish current Task.] -Cook: %s. \n    -Machine:%s,   -Task:%s",
+                                cook.toString(),curMachine.toString(), curTask.toString()));
                     }
                 }
 
-                // Finish ->
-                //  Notify scheduler:
-                //      1. Release machine
-                //      2. do sth about order
-                //          Case 1. order finished, Serve food to customer.
-                //          Case 2. order not finished, put back into orderPool
+                // Finish
+                System.out.println(String.format("[Cook Finished & Restart] -Cook: %s. \n    -Machine:%s,   -Task:%s",
+                        cook.toString(),curMachine.toString(), curTask.toString()));
                 synchronized (scheduler){
-                    scheduler.finishExecution(schedule);
-                    cook.setSchedule(null);
+                    //  1. Notify scheduler:
+                    //      1) Update Word load
+                    //      2) ...
+                    scheduler.finishSchedule(schedule);
                 }
-
+                // reset cook
+                cook.setSchedule(null);
+                // TODO order finished, Serve food to customer. Mark order as finished.
+                schedule.getOrder().setState(OrderState.FINISHED);
             }
         }catch (InterruptedException ie){
             System.out.println(String.format("Cook#%-4d get interrupted when %s.", cook.getID(), cook.getState().toString()));

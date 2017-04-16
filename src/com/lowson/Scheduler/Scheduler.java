@@ -1,116 +1,120 @@
 package com.lowson.Scheduler;
 
-import com.lowson.Role.Diner;
-import com.lowson.Role.Food;
-import com.lowson.Role.Machine;
-import com.lowson.Role.Order;
+import com.lowson.Role.*;
+import com.lowson.Util.Environment;
 
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.Queue;
+
 
 /**
  * Created by lenovo1 on 2017/3/25.
  */
 public abstract class Scheduler {
-    public static final HashSet<Machine> availMachines = new HashSet<>();
+    public final HashSet<Machine> availMachines = new HashSet<>();
+    protected HashMap<Food, Integer> workLoadStats = new HashMap<>();
     protected Queue<Order> orderPool;
-    protected Queue<Order> failedScheduleOrderPool;
 
     /*
+    Cook will call this method to get an order.
     @return:
-            schedule - machine and task execution sequence pair.
+            schedule - task execution sequence pair.
             null - when there is no schedule available.
      */
     public Schedule getSchedule(){
-        Order curOrder = null;
-        Machine machine = null;
-        ArrayList<Food> taskList = null;
-        Food task = null;
-        boolean findMachineSucceed = false;
-        while(orderPool.size() > 0 && !findMachineSucceed){
-            // get order from orderPool
-            curOrder = getOrder();
-            if(curOrder == null) // no order in the pool -> no schedule
-               return null;
-
-            // get the task list for this order
-            taskList = getOrderedTaskList(curOrder);
-            // get a machine to work on
-
-            synchronized (availMachines)
-            {
-                for(Food f: taskList){
-                   if(availMachines.contains(f.getCorrespondingMachine())){
-                       machine = f.getCorrespondingMachine();
-                       findMachineSucceed = true;
-                       task = f;
-                       break;
-                   }
-                }
-                if(! findMachineSucceed){ // no machine available for this task(order)
-                    rescheduleForNextRound(curOrder);  // put into failedScheduleOrderPool
-                }
-            }
-       }
-        // Already checked through all orders, can not find a working schedule.
-       if(!findMachineSucceed){
+//        System.out.println(orderPool);
+        if (orderPool.size() == 0)
             return null;
-       }
-
-       assert machine != null;
+        // get order from orderPool
+        Order curOrder = getOrder();
+        // get the task list for this order
+        LinkedList<Task> taskList = getOrderedTaskList(curOrder);
        assert curOrder != null;
-       assert task != null;
+       assert taskList != null;
+       return new Schedule(curOrder, taskList);
+    }
 
-        //HashMap<Food, Integer> taskCntMap = getTaskCntMap(curOrder, taskList);
-       int taskCnt = getTaskCnt(curOrder, task);
-       return new Schedule(curOrder, task, machine,taskCnt);
+    public Machine getAvailableMachine(Machine m){
+        if(availMachines.contains(m)){
+            availMachines.remove(m);
+            return m;
+        }else{
+            return null;
+        }
+    }
+
+    public void releaseMachine(Machine m){
+        assert !availMachines.contains(m);
+        availMachines.add(m);
     }
 
     /*
     At the start of each minute, put all orders in failedScheduleOrderPool into orderPool
      */
-    public void resetOrderPool() {
-        for(Order o: failedScheduleOrderPool){
-            orderPool.offer(o);
-        }
-    }
+//    public void resetOrderPool() {
+//        for(Order o: failedScheduleOrderPool){
+//            orderPool.offer(o);
+//        }
+//    }
 
     /*
     Submit order to orderPool.
+    Need to update the word load stats.
      */
-    public abstract void submitOrder(Order order);
+    public void submitOrder(Order order){
+        updateWordLoad(order, true);
+        orderPool.offer(order);
+        assert orderPool.size() <= Environment.availTables.size();
+    };
 
-    public void rescheduleForNextRound(Order order) {
-        failedScheduleOrderPool.offer(order);
-    }
 
-    public void finishExecution(Schedule schedule){
-        Order order = schedule.getOrder();
-        order.addFinishedFood(schedule.getTask(), schedule.getTaskCnt());
-        availMachines.add(schedule.getMachine());  // release machine
-        if(order.isReady()){
-            Diner diner = Diner.dinerMap.get(order.getDinerID());
-            diner.notifyAll();
-        }else{
-            orderPool.offer(order);
+    protected void updateWordLoad(Order order, boolean isAdd){
+        int n;
+        for(Food f: Food.values()){
+            n = workLoadStats.getOrDefault(f, 0);
+            if (isAdd){
+                n += order.getOrderedFoodCnt(f) * f.getCookTime();
+            }else{
+                n -= order.getOrderedFoodCnt(f) * f.getCookTime();
+                assert n >= 0;
+            }
+            workLoadStats.put(f, n);
         }
     }
 
+
+
+    /*
+    Get a order for scheduling
+     */
     protected abstract Order getOrder();
+
+    /*
+    When a certain order finished,
+    inform scheduler to update it's work load.
+     */
+    public void finishSchedule(Schedule schedule){
+        Order order = schedule.getOrder();
+        LinkedList<Task> taskList = schedule.getTaskList();
+        assert order.getState() == OrderState.FINISHED;
+        assert taskList.size() == 0;
+        updateWordLoad(order, false);
+    }
 
     /*
     Organize the foods to be prepared into a list.
     applySchedulingLogic() helps to apply the scheduling logic to the list.
      */
-    protected ArrayList<Food> getOrderedTaskList(Order order) {
-        ArrayList<Food> taskList = new ArrayList<>();
+    protected LinkedList<Task> getOrderedTaskList(Order order) {
+        LinkedList<Task> taskList = new LinkedList<>();
         for(Food f: Food.values()){
-            if(order.getNotPreparedCnt(f) > 0){
-                taskList.add(f);
+            if(order.getOrderedFoodCnt(f) > 0){
+                taskList.add(new Task(f, order.getOrderedFoodCnt(f)));
             }
         }
-        applyTaskOrderingLogic(taskList); // adjust the ordering of task execution
+        applyTaskOrderingLogic(taskList); // get ordered Task list
         return taskList;
     }
 
@@ -119,14 +123,14 @@ public abstract class Scheduler {
         which order to execute first.
     A concrete scheduler need to override this.
      */
-    protected abstract void applyTaskOrderingLogic(ArrayList<Food> taskList);
+    protected abstract void applyTaskOrderingLogic(LinkedList<Task> taskList);
 
-    /*
-    The method implements the scheduling logic about
-        how many food to process on each machine.
-    A concrete scheduler need to override this.
-     */
-    protected abstract int getTaskCnt(Order curOrder, Food task);
+//    /*
+//    The method implements the scheduling logic about
+//        how many food to process on each machine.
+//    A concrete scheduler need to override this.
+//     */
+//    protected abstract int getTaskCnt(Order curOrder, Food task);
 
 //    protected HashMap<Food, Integer> getTaskCntMap(Order order, ArrayList<Food> taskList) {
 //        HashMap<Food, Integer> taskCntmap = new HashMap<>();
@@ -134,11 +138,16 @@ public abstract class Scheduler {
 //        return taskCntmap;
 //    }
 
-    /*
-    get the count of orders in this scheduler.
-     */
-    public int getTotalUnfinishedOrderCnt() {
-        return orderPool.size() + failedScheduleOrderPool.size();
-    }
+//    /*
+//    get the count of orders in this scheduler.
+//     */
+//    public int getTotalUnfinishedOrderCnt() {
+//        return orderPool.size() + failedScheduleOrderPool.size();
+//    }
+
+
+//    public void rescheduleForNextRound(Order order) {
+//        failedScheduleOrderPool.offer(order);
+//    }
 
 }

@@ -1,4 +1,4 @@
-package com.lowson.Scheduler;
+package com.lowson.Exception;
 
 /**
  * Created by lenovo1 on 2017/3/27.

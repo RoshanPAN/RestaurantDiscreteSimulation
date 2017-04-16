@@ -26,4 +26,10 @@ public enum Food {
     public int getCookTime() {
         return cookTime;
     }
+
+
+    @Override
+    public String toString() {
+        return String.format("%s(%d)", foodName, cookTime);
+    }
 }

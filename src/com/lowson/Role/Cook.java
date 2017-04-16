@@ -1,7 +1,7 @@
 package com.lowson.Role;
 
 import com.lowson.Scheduler.Schedule;
-import com.lowson.Util.Environment;
+import com.lowson.Exception.UnexpectedBehaviorException;
 
 import java.util.ArrayList;
 
@@ -25,6 +25,10 @@ public class Cook {
         schedule = null;
     }
 
+    public void setFinishedTask(Task task){
+        this.schedule.getTaskList().remove(task);
+    }
+
     public int getID(){ return cookID; }
 
 
@@ -44,17 +48,30 @@ public class Cook {
         this.startWorkingTime = startWorkingTime;
     }
 
-    public boolean isTaskFinished() {
-        int cookTimePerFood = schedule.getTask().getCookTime();
-        int taskCnt = schedule.getTaskCnt();
-        int endTime = this.startWorkingTime + cookTimePerFood * taskCnt;
-        if(Environment.clock.getCurrentTime() < endTime){
+    public boolean isScheduleFinished() {
+        // TODO
+        if(schedule == null)
+            throw new UnexpectedBehaviorException("Checking Schedule status when no schedule set");
+
+        if(schedule.getTaskList().size() == 0){
+            return true;
+        }else{
             return false;
         }
-        return true;
     }
 
     public void setSchedule(Schedule schedule) {
         this.schedule = schedule;
+    }
+
+    public Schedule getSchedule(){
+        return this.schedule;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder builder = new StringBuilder();
+        builder.append(String.format("Cook#%-3d: State=%s, schedule: %s", cookID, state, schedule));
+        return builder.toString();
     }
 }

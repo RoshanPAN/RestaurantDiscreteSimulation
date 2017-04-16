@@ -17,6 +17,7 @@ public class ClockThread implements Runnable{
 
     @Override
     public void run() {
+        System.out.println(String.format("[Clock Thread Start] %s", clock));
         // Before end time, exists as a time provider.
         while(clock.getCurrentTime() < clock.getEndTime()){
             /*
@@ -27,55 +28,59 @@ public class ClockThread implements Runnable{
              */
             //TODO the order may not like below, and in this case, it will waste 1 minute.
             try {
-                // reset scheduler
-                Environment.scheduler.resetOrderPool();
                 // threads working
                 updateCooks(CookState.WORKING);
                 sleep(10);
                 updateDiners(DinerState.EATING);
                 sleep(10);
-                Environment.availTables.notifyAll(); // arrived diner try to occupy empty table & submit order
+                synchronized (Environment.availTables){
+                    Environment.availTables.notifyAll(); // arrived diner try to occupy empty table & submit order
+                }
                 sleep(10);
                 updateDiners(DinerState.NOT_ARRIVED);
                 sleep(10);
-//                updateDiners(DinerState.WAIT_FOR_FOOD);  // will be notified by WORKING cooks who finished.
-//                sleep(10);
+                updateDiners(DinerState.WAIT_FOR_FOOD);  // will be notified by WORKING cooks who finished.
+                sleep(10);
                 updateCooks(CookState.IDLE);
                 sleep(10);
                 while(!isAllThreadBlockedOrFinished()){
-                    sleep(20); // InterruptedException
+                    System.out.println("[Clock] Wait for other threads to be blocked.");
+                    sleep(30); // InterruptedException
                 }
                 clock.increment();
+                System.out.println("[Clock]" + clock.toString());
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
         }
-        // At end time, interrupt all live DinerThread & CookThread.
-        for(DinerThread t: Environment.dinerThreadPool){
-            if(t.getState() == Thread.State.TERMINATED) continue;
-            t.interrupt();
-        }
-        for(CookThread t: Environment.cookThreadPool){
-            if(t.getState() == Thread.State.TERMINATED) continue;
-            t.interrupt();
-        }
+//        // At end time, interrupt all live DinerThread & CookThread.
+//        for(DinerThread t: Environment.dinerThreadPool){
+//            if(t.getState() == Thread.State.TERMINATED) continue;
+//            t.interrupt();
+//        }
+//        for(CookThread t: Environment.cookThreadPool){
+//            if(t.getState() == Thread.State.TERMINATED) continue;
+//            t.interrupt();
+//        }
     }
 
     private boolean isAllThreadBlockedOrFinished() {
         Thread.State s;
         for(DinerThread t: Environment.dinerThreadPool){
             s = t.getState();
-            if( s == Thread.State.BLOCKED || s == Thread.State.TERMINATED) {
+            if( s == Thread.State.BLOCKED || s == Thread.State.TERMINATED || s == Thread.State.WAITING) {
                 continue;
             }else{
+                System.out.println("[Not blocked] " + s.toString() + t.diner.toString());
                 return false;
             }
         }
         for(CookThread t: Environment.cookThreadPool){
             s = t.getState();
-            if( s == Thread.State.BLOCKED || s == Thread.State.TERMINATED) {
+            if( s == Thread.State.BLOCKED || s == Thread.State.TERMINATED || s == Thread.State.WAITING) {
                 continue;
             }else{
+                System.out.println("[Not blocked] " + s.toString() + t.cook.toString());
                 return false;
             }
         }

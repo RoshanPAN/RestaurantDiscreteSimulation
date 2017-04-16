@@ -16,4 +16,10 @@ public class Table {
         tableList.add(this);
     }
 
+    @Override
+    public String toString() {
+        StringBuilder b = new StringBuilder();
+        b.append(String.format("Table# %3d.", tableID));
+        return b.toString();
+    }
 }

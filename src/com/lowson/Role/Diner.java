@@ -1,7 +1,6 @@
 package com.lowson.Role;
 
 import com.lowson.Util.Environment;
-import com.sun.javafx.binding.StringFormatter;
 
 import java.util.HashMap;
 
@@ -39,11 +38,12 @@ public class Diner {
     }
 
     public boolean isFinishedEat(){
-        assert getOrder().isReady();
-        if(Environment.clock.getCurrentTime() < startEatTime + eatDuration){
-            return false;
+        System.out.println(String.format("Is Finished Eat: %d < %d",
+                Environment.clock.getCurrentTime(), startEatTime + eatDuration));
+        if(Environment.clock.getCurrentTime() >= startEatTime + eatDuration){
+            return true;
         }
-        return true;
+        return false;
     }
 
     public void occupyTable(Table t) {
@@ -70,15 +70,6 @@ public class Diner {
         this.startEatTime = startEatTime;
     }
 
-    @Override
-    public String toString(){
-        StringBuilder builder = new StringBuilder();
-        builder.append(StringFormatter.format("Diner#%03d: Arrived@%dmin, ordered %s",
-                dinerID, arrivalTime, myOrder.toString()));
-        return builder.toString();
-    }
-
-
     public Table getTable() {
         return table;
     }
@@ -87,5 +78,12 @@ public class Diner {
         this.table = table;
     }
 
+    @Override
+    public String toString(){
+        StringBuilder builder = new StringBuilder();
+        builder.append(String.format("Diner#%3d:  -State: %s, -Arrived@ %3d min, -Ordered %s, -Table: %s",
+                dinerID, state,arrivalTime, myOrder.toString(), table));
+        return builder.toString();
+    }
 
 }

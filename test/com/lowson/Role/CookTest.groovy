@@ -1,7 +1,7 @@
 package com.lowson.Role
 
-import com.lowson.Scheduler.Scheduler
-import com.lowson.Util.Environment
+import com.lowson.Scheduler.Schedule
+
 /**
  * Created by lenovo1 on 2017/3/26.
  */
@@ -25,40 +25,15 @@ class CookTest extends GroovyTestCase {
         c1.setStartWorkingTime(1)
         assertSame(c1.getStartWorkingTime(), 1)
         c2.setStartWorkingTime(1000)
-        assertSame(1000, c1.getStartWorkingTime())
-
-
+        assertTrue(c2.getStartWorkingTime() == 1000)
+        println c1
+        LinkedList<Task> taskList = new LinkedList<>();
+        taskList.add(new Task(Food.Burger, 1))
+        taskList.add(new Task(Food.Fries, 1))
+        c1.setSchedule(new Schedule(new Order(1, 1, 1, 1, 1), taskList))
+        println c1
     }
 
-
-    void testIsTaskFinished() {
-//        Diner d = new Diner(1, 1, 1, 1, 1)
-//        Schedule s1 = new Schedule(d.getOrder(), Food.Burger, Machine.BurgerMach, 1)
-//        Schedule s2 = new Schedule(d.getOrder(), Food.Coke, Machine.CokeMach, 1)
-//        Cook c0 = new Cook()
-//        Cook c1 = new Cook()
-//
-        Environment.initAllRolesForTest(2, 2, 2)
-        assertSame(Diner.dinerMap.size(), 2)
-        assertSame(Cook.cookList.size(), 2)
-        assertSame(Table.tableList.size(), 2)
-        assertSame(Environment.availTables.size(), 2)
-        Cook c0 = Cook.cookList.get(0)
-        Cook c1 = Cook.cookList.get(1)
-        Diner d0 = Diner.dinerMap.get(0)
-        Diner d1 = Diner.dinerMap.get(1)
-        assertFalse(c0.isTaskFinished())
-        assertFalse(c1.isTaskFinished())
-        Scheduler scheduler = Environment.scheduler
-        assertSame(scheduler.getTotalUnfinishedOrderCnt(), 0)
-        scheduler.submitOrder(d0.getOrder())
-        assertSame(scheduler.getTotalUnfinishedOrderCnt(), 1)
-        scheduler.submitOrder(d1.getOrder())
-        scheduler.submitOrder(d1.getOrder())
-
-
-
-    }
 
     /*
     public boolean isTaskFinished(Schedule schedule) {
