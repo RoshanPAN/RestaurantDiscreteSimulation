@@ -35,11 +35,12 @@ public class ClockThread implements Runnable{
                 sleep(5);
                 updateDiners(DinerState.EATING);
                 sleep(5);
+                sleep(5);
+                updateDiners(DinerState.NOT_ARRIVED);
+                // Scheduling about table
                 synchronized (Environment.availTables){
                     Environment.availTables.notifyAll(); // arrived diner try to occupy empty table & submit order
                 }
-                sleep(5);
-                updateDiners(DinerState.NOT_ARRIVED);
                 sleep(5);
                 updateDiners(DinerState.WAIT_FOR_FOOD);  // will be notified by WORKING cooks who finished.
                 sleep(5);

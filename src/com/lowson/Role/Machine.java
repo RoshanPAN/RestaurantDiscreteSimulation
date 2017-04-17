@@ -35,12 +35,3 @@ public enum Machine {
     }
 
 }
-
-//class FoodMachine{
-//    String foodName;
-//    int cookTime;
-//    public FoodMachine(String foodName, int cookTimeMin){
-//        this.foodName = foodName;
-//        this.cookTime = cookTimeMin;
-//    }
-//}
