@@ -9,7 +9,7 @@ public enum Food {
     Coke("Coke", 2, Machine.CokeMach),
     Sundae("Sundae", 1, Machine.SundaeMach);
 
-    private final Object cookTime;
+    private final int cookTime;
     private final String foodName;
     private final Machine machine;
 
@@ -23,4 +23,13 @@ public enum Food {
         return machine;
     }
 
+    public int getCookTime() {
+        return cookTime;
+    }
+
+
+    @Override
+    public String toString() {
+        return String.format("%s(%d)", foodName, cookTime);
+    }
 }

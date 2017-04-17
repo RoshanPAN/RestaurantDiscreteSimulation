@@ -5,7 +5,8 @@ package com.lowson.Role;
  */
 public enum CookState {
     IDLE("Idle"),
-    WORK_ON_MACHINE("Working On Machine");
+    WAIT_FOR_MACHINE("Wait for machine"),
+    WORKING("Working");
 
     String state;
 

@@ -65,4 +65,6 @@ $RECYCLE.BIN/
 .idea/
 .idea/*
 out/
+
 .clover/
+.clover/coverage.db

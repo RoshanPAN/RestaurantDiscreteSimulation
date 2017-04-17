@@ -7,8 +7,10 @@ class DinerTest extends GroovyTestCase {
     void testDinner(){
         Diner d = new Diner(0, 1, 1, 1, 1)
         assertSame(d.getState(), DinerState.NOT_ARRIVED)
-        assertTrue(d.myOrder().dinerID == d.getID())
-        assertSame(Diner.dinerList[d.getID()], d)
+        assertTrue(d.getOrder().dinerID == d.getID())
+        assertSame(Diner.dinerMap[d.getID()], d)
+        println d
+
     }
 
 }

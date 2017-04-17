@@ -19,12 +19,17 @@ public class RelativeTimeClock{
         private final static RelativeTimeClock clock = new RelativeTimeClock();
     }
 
+    public void initClock(){
+        this.initClock(Environment.SimulationDuration);
+//        clock.initClock(0, Conf.SimulationDuration, 1);
+    }
+
     // Initialize clock
-    public void initClock(int duration){
+    private void initClock(int duration){
         initClock(0, duration, 1);
     }
 
-    public void initClock(int startTime, int duration, int timeUnit){
+    private void initClock(int startTime, int duration, int timeUnit){
         this.currentTime = startTime;
         this.endTime = duration + startTime;
         this.timeUnit = timeUnit;
@@ -33,8 +38,8 @@ public class RelativeTimeClock{
     public int getCurrentTime(){
         return this.currentTime;
     }
-    public int getEndTime(){ return this.endTime; }
 
+    public int getEndTime(){ return this.endTime; }
 
     public void increment(){
         this.currentTime ++;
@@ -42,6 +47,6 @@ public class RelativeTimeClock{
 
     @Override
     public String toString(){
-        return String.format("Time:%4d min\n", currentTime).toString();
+        return String.format("Relative Time:%4d min\n", currentTime).toString();
     }
 }

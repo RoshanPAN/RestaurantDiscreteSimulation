@@ -1,9 +1,14 @@
 package com.lowson.Threads;
 
+import com.lowson.Role.Cook;
+import com.lowson.Role.CookState;
 import com.lowson.Role.Diner;
 import com.lowson.Role.DinerState;
 import com.lowson.Util.Environment;
 import com.lowson.Util.RelativeTimeClock;
+
+import static com.lowson.Util.Environment.tableScheduler;
+import static java.lang.Thread.sleep;
 
 /**
  * Created by lenovo1 on 2017/3/25.
@@ -13,55 +18,116 @@ public class ClockThread implements Runnable{
 
     @Override
     public void run() {
+        System.out.println(String.format("[Clock Thread Start] %s", clock));
         // Before end time, exists as a time provider.
-        while(clock.getCurrentTime() < clock.getEndTime()){
+        while(!isAllDinerFinished()){
             /*
                 At the end of time = 0,     some cook finish cooking for an order and served food to diner,
                 At the start of time = 1,   some dinner is served and left.(some table is freed by dinner).
                 At the start of time = 0,   some dinner arrived, some dinners occupy tables.
                                             some cook get order & get machine & start to work.
              */
-            //TODO check the ordering of updates here after cook & diner implementation
+            //TODO the order may not like below, and in this case, it will waste 1 minute.
             try {
-                Environment.scheduler.resetOrderPool();
-                Environment.availTables.notifyAll(); // arrived diner try to occupy empty table & submit order
-                updateCooks(); // cook try to work
-                updateDiners(); // diner try to
-                Thread.sleep(100); // InterruptedException
+                updateCooks(CookState.WORKING);
+                updateCooks(CookState.WAIT_FOR_MACHINE);
+                updateCooks(CookState.IDLE);
+                sleep(5);
+                updateDiners(DinerState.EATING);
+                synchronized (Diner.dinerMap){
+                    updateDiners(DinerState.NOT_ARRIVED);
+                }
+                sleep(5);
+                // Scheduling about table
+                synchronized (tableScheduler){
+                    for(Diner d: tableScheduler.getScheduledDiners()){
+                        synchronized (d){
+                            d.notifyAll();
+                        }
+                    }
+//                    Environment.availTables.notifyAll(); // arrived diner try to occupy empty table & submit order
+                }
+                updateDiners(DinerState.WAIT_FOR_FOOD);  // will be notified by WORKING cooks who finished.
+                sleep(5);
+                updateCooks(CookState.IDLE);
+                sleep(5);
+                while(!isAllThreadBlockedOrFinished()){
+                    System.out.println("[Clock] Wait for other threads to be blocked.");
+                    sleep(30); // InterruptedException
+                }
+                System.out.println(Environment.scheduler.availMachines.toString());
                 clock.increment();
-
+                System.out.println("[Clock]" + clock.toString());
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
         }
-        // At end time, interrupt all live DinerThread & CookThread.
-        for(DinerThread t: Environment.dinerThreadPool){
-            if(t.getState() == Thread.State.TERMINATED) continue;
-            t.interrupt();
-        }
+//        // At end time, interrupt all live DinerThread & CookThread.
+//        for(DinerThread t: Environment.dinerThreadPool){
+//            if(t.getState() == Thread.State.TERMINATED) continue;
+//            t.interrupt();
+//        }
         for(CookThread t: Environment.cookThreadPool){
             if(t.getState() == Thread.State.TERMINATED) continue;
             t.interrupt();
         }
     }
 
-    //TODO
-    private void updateDiners() {
+    private boolean isAllDinerFinished() {
+        boolean isAllFinished = true;
+        for(Diner d: Environment.dinerList){
+            if(d.getState() != DinerState.LEFT){
+                isAllFinished = false;
+            }
+        }
+        return isAllFinished;
+    }
+
+    private boolean isAllThreadBlockedOrFinished() {
+        Thread.State s;
+        for(DinerThread t: Environment.dinerThreadPool){
+            s = t.getState();
+            if( s == Thread.State.BLOCKED || s == Thread.State.TERMINATED || s == Thread.State.WAITING) {
+                continue;
+            }else{
+                System.out.println("[Not blocked] " + s.toString() + t.diner.toString());
+                return false;
+            }
+        }
+        for(CookThread t: Environment.cookThreadPool){
+            s = t.getState();
+            if( s == Thread.State.BLOCKED || s == Thread.State.TERMINATED || s == Thread.State.WAITING) {
+                continue;
+            }else{
+                System.out.println("[Not blocked] " + s.toString() + t.cook.toString());
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private void updateDiners(DinerState state) {
         // wake up each diner thread by notifying each Dinner
-        synchronized (Diner.dinerList){
-            for(Diner d: Diner.dinerList){
+        synchronized (Diner.dinerMap){
+            for(Diner d: Diner.dinerMap.values()){
+                if(d.getState() != state) continue;
                 synchronized (d){
-                    if(d.getState() == DinerState.LEFT) continue;
                     d.notifyAll();
                 }
             }
         }
     }
 
-    //TODO
-    private void updateCooks(){
-        // wake up each cook thread by notifying each Cook
-
+    private void updateCooks(CookState state){
+        // wake up each cook thread in this state
+        for(Cook c: Cook.cookList){
+            if(c.getState() == state)
+                synchronized (c){
+                    c.notifyAll();
+                }
+        }
     }
+
+
 
 }
