@@ -6,6 +6,7 @@ import com.lowson.Role.Machine;
 import com.lowson.Role.Table;
 import com.lowson.Scheduler.Scheduler;
 import com.lowson.Scheduler.SimpleScheduler;
+import com.lowson.Scheduler.TableScheduler;
 import com.lowson.Threads.ClockThread;
 import com.lowson.Threads.CookThread;
 import com.lowson.Threads.DinerThread;
@@ -22,8 +23,9 @@ import static java.lang.Thread.sleep;
 public class Environment {
     public static final int SimulationDuration = 120;
     public static final Scheduler scheduler = SimpleScheduler.getInstance();
+    public static final TableScheduler tableScheduler = new TableScheduler();
     public static RelativeTimeClock clock;
-    public static final LinkedList<Table> availTables = new LinkedList<>();
+//    public static final LinkedList<Table> availTables = new LinkedList<>();
     public static final LinkedList<CookThread> cookThreadPool = new LinkedList<>();
     public static final LinkedList<DinerThread> dinerThreadPool = new LinkedList<>();
     public static ClockThread clockThread = null;
@@ -61,7 +63,7 @@ public class Environment {
         Table t;
         for(int i = 0; i < num_table; i++){
             t = new Table();
-            availTables.offer(t);
+            TableScheduler.availTables.offer(t);
         }
 
         // Scheduler - nothing to do
@@ -73,7 +75,7 @@ public class Environment {
 
         System.out.println(dinerList.size());
         System.out.println(cookList.size());
-        System.out.println(availTables.size());
+        System.out.println(TableScheduler.availTables.size());
         System.out.println(clock);
 
     }

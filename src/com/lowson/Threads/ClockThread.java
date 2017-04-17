@@ -7,6 +7,7 @@ import com.lowson.Role.DinerState;
 import com.lowson.Util.Environment;
 import com.lowson.Util.RelativeTimeClock;
 
+import static com.lowson.Util.Environment.tableScheduler;
 import static java.lang.Thread.sleep;
 
 /**
@@ -29,19 +30,24 @@ public class ClockThread implements Runnable{
             //TODO the order may not like below, and in this case, it will waste 1 minute.
             try {
                 updateCooks(CookState.WORKING);
-                sleep(5);
                 updateCooks(CookState.WAIT_FOR_MACHINE);
                 updateCooks(CookState.IDLE);
                 sleep(5);
                 updateDiners(DinerState.EATING);
-                sleep(5);
-                sleep(5);
-                updateDiners(DinerState.NOT_ARRIVED);
-                // Scheduling about table
-                synchronized (Environment.availTables){
-                    Environment.availTables.notifyAll(); // arrived diner try to occupy empty table & submit order
+                synchronized (Diner.dinerMap){
+                    updateDiners(DinerState.NOT_ARRIVED);
                 }
                 sleep(5);
+                // Scheduling about table
+                synchronized (tableScheduler){
+                    for(Diner d: tableScheduler.getScheduledDiners()){
+                        synchronized (d){
+                            d.notifyAll();
+                        }
+                    }
+//                    Environment.availTables.notifyAll(); // arrived diner try to occupy empty table & submit order
+                }
+
                 updateDiners(DinerState.WAIT_FOR_FOOD);  // will be notified by WORKING cooks who finished.
                 sleep(5);
                 updateCooks(CookState.IDLE);

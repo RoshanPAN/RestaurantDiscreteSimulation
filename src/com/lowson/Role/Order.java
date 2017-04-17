@@ -27,7 +27,7 @@ public class Order {
     }
 
     public int getOrderedFoodCnt(Food food){
-        return orderedCnt.get(food);
+        return orderedCnt.getOrDefault(food, 0);
     }
 
     public int getOrderID(){ return orderID;}

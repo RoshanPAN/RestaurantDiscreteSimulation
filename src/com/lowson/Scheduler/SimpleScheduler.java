@@ -55,12 +55,6 @@ public class SimpleScheduler extends Scheduler{
         return ((LinkedList<Order>)this.orderPool).pollFirst();
     }
 
-    public Food getBottleNeck(){
-        Food bottleNeck = null;
-        int maxLoad = 0;
-        return bottleNeck;
-
-    }
 
     // Ordering the tasks according to  work load statistics(currently submitted order).
     @Override

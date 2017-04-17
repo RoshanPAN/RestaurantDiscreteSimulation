@@ -66,7 +66,7 @@ public abstract class Scheduler {
     public void submitOrder(Order order){
         updateWordLoad(order, true);
         orderPool.offer(order);
-        assert orderPool.size() <= Environment.availTables.size();
+        assert orderPool.size() <= TableScheduler.availTables.size();
     };
 
 
@@ -125,6 +125,20 @@ public abstract class Scheduler {
      */
     protected abstract void applyTaskOrderingLogic(LinkedList<Task> taskList);
 
+
+    public Food getBottleNeck(){
+        Food bottleNeck = null;
+        int maxLoad = 0;
+        int load;
+        for(Food f: Food.values()){
+            load = workLoadStats.getOrDefault(f, 0);
+            if(load > maxLoad){
+                bottleNeck = f;
+                maxLoad = load;
+            }
+        }
+        return bottleNeck;
+    }
 //    /*
 //    The method implements the scheduling logic about
 //        how many food to process on each machine.

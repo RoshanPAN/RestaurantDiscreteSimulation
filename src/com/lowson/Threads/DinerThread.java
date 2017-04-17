@@ -8,8 +8,7 @@ import com.lowson.Scheduler.Scheduler;
 import com.lowson.Util.Environment;
 import com.lowson.Util.RelativeTimeClock;
 
-import static com.lowson.Util.Environment.availTables;
-
+import static com.lowson.Util.Environment.tableScheduler;
 
 /**
  * Created by lenovo1 on 2017/3/24.
@@ -42,13 +41,21 @@ public class DinerThread extends Thread {
             // wait for an table to sit down
             diner.setState(DinerState.WAIT_FOR_TABLE);
             System.out.println(String.format("[Diner Wait For Table].%s\n", diner));
-            synchronized (availTables)
-            {
-                while(!Thread.currentThread().isInterrupted() && availTables.size() <= 0){
-                    availTables.wait();
-                }
-                diner.setTable(availTables.pollFirst());
+            synchronized (diner){
+                diner.wait(); // will be wake us by Clock thread. When TableScheduler let it to go.
             }
+            synchronized (tableScheduler){
+                diner.setTable(tableScheduler.getTable());
+                assert diner.getTable() != null;
+            }
+
+//            synchronized (availTables)
+//            {
+//                while(!Thread.currentThread().isInterrupted() && availTables.size() <= 0){
+//                    availTables.wait();
+//                }
+//                diner.setTable(availTables.pollFirst());
+//            }
 
             // Wait for food to be served
             Order myOrder = diner.getOrder();
@@ -75,8 +82,8 @@ public class DinerThread extends Thread {
             }
 
             // Free table & left restaurant
-            synchronized (availTables){
-                availTables.offer(diner.getTable());
+            synchronized (tableScheduler){
+                tableScheduler.releaseTable(diner.getTable());
                 diner.setTable(null);
             }
             diner.setState(DinerState.LEFT);
