@@ -78,6 +78,7 @@ public class CookThread extends Thread{
                                 cook.toString(),curMachine.toString(), curTask.toString()));
                         cook.setStartWorkingTime(Environment.clock.getCurrentTime());
                         while(!this.isInterrupted() &&
+                                //TODO How to decide the event ending time
                                 Environment.clock.getCurrentTime() < cook.getStartWorkingTime() + curTask.getProcessingTime()){
                             System.out.println(String.format("Cook#%d  %d<%d",
                                     cook.getID(), Environment.clock.getCurrentTime(), cook.getStartWorkingTime() + curTask.getProcessingTime()));

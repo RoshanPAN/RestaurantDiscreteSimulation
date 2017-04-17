@@ -21,7 +21,8 @@ public class Main {
         System.out.println("######## Step1: Environment Initialization from file######\n\n");
         RestaurantInputReader reader = null;
         try {
-            reader = new RestaurantInputReader("./resource/data1.txt");
+//            reader = new RestaurantInputReader("./resource/data1.txt");
+            reader = new RestaurantInputReader(System.in);
             Environment.initAllRoles(reader);
         } catch (IOException e) {
             System.out.println("Failed reading file.");

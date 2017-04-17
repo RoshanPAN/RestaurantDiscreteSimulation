@@ -28,23 +28,23 @@ public class ClockThread implements Runnable{
              */
             //TODO the order may not like below, and in this case, it will waste 1 minute.
             try {
-                // threads working
                 updateCooks(CookState.WORKING);
                 sleep(5);
                 updateCooks(CookState.WAIT_FOR_MACHINE);
+                updateCooks(CookState.IDLE);
                 sleep(5);
                 updateDiners(DinerState.EATING);
-                sleep(10);
+                sleep(5);
                 synchronized (Environment.availTables){
                     Environment.availTables.notifyAll(); // arrived diner try to occupy empty table & submit order
                 }
-                sleep(10);
+                sleep(5);
                 updateDiners(DinerState.NOT_ARRIVED);
-                sleep(10);
+                sleep(5);
                 updateDiners(DinerState.WAIT_FOR_FOOD);  // will be notified by WORKING cooks who finished.
-                sleep(10);
+                sleep(5);
                 updateCooks(CookState.IDLE);
-                sleep(10);
+                sleep(5);
                 while(!isAllThreadBlockedOrFinished()){
                     System.out.println("[Clock] Wait for other threads to be blocked.");
                     sleep(30); // InterruptedException

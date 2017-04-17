@@ -2,9 +2,7 @@ package com.lowson.Util;
 
 import com.lowson.Role.Diner;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.util.StringTokenizer;
 
 /**
@@ -17,6 +15,11 @@ public class RestaurantInputReader {
             throws IOException {
         FileReader fr = new FileReader(fileName);
         br = new BufferedReader(fr);
+    }
+
+    public RestaurantInputReader(InputStream in)
+            throws IOException {
+        br = new BufferedReader(new InputStreamReader(in));
     }
 
     //TODO
