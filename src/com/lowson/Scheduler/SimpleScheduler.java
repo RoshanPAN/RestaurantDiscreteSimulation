@@ -7,6 +7,7 @@ import com.lowson.Role.Task;
 import com.lowson.Util.Environment;
 
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedList;
 
@@ -49,9 +50,18 @@ public class SimpleScheduler extends Scheduler{
 
     @Override
     /*
-    FIFO
+    Get the one which have least bottle neck food(task)
      */
     protected Order getOrder() {
+        Food bottleNeck = getBottleNeck();
+        Collections.sort((LinkedList<Order>)orderPool,
+                            Comparator.comparingInt(a -> a.getOrderedFoodCnt(bottleNeck)));
+        System.out.println();
+        System.out.println();
+        System.out.println("Here is ordered result");
+        for(Order o: orderPool){
+            System.out.println(o);
+        }
         return ((LinkedList<Order>)this.orderPool).pollFirst();
     }
 

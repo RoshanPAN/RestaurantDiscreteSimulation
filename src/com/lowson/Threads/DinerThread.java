@@ -59,7 +59,9 @@ public class DinerThread extends Thread {
 
             // Wait for food to be served
             Order myOrder = diner.getOrder();
-            scheduler.submitOrder(myOrder);
+            synchronized (scheduler){
+                scheduler.submitOrder(myOrder);
+            }
             myOrder.setState(OrderState.NOT_SCHEDULED);
 //            myOrder.setState(OrderState.NOT_SCHEDULED);
             diner.setState(DinerState.WAIT_FOR_FOOD);

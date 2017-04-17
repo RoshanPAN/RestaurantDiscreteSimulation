@@ -47,7 +47,6 @@ public class ClockThread implements Runnable{
                     }
 //                    Environment.availTables.notifyAll(); // arrived diner try to occupy empty table & submit order
                 }
-
                 updateDiners(DinerState.WAIT_FOR_FOOD);  // will be notified by WORKING cooks who finished.
                 sleep(5);
                 updateCooks(CookState.IDLE);
