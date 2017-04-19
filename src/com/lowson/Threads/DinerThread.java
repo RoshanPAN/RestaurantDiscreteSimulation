@@ -6,7 +6,7 @@ import com.lowson.Role.Order;
 import com.lowson.Role.OrderState;
 import com.lowson.Scheduler.Scheduler;
 import com.lowson.Util.Environment;
-import com.lowson.Util.RelativeTimeClock;
+import com.lowson.Role.RelativeTimeClock;
 
 import static com.lowson.Util.Environment.tableScheduler;
 
@@ -28,7 +28,7 @@ public class DinerThread extends Thread {
     @Override
     public void run() {
         try {
-            System.out.println(String.format("Diner%d start.\n", diner.getID()));
+            System.out.println(String.format("Diner%d start.", diner.getID()));
             // dinner not arrived
             diner.setState(DinerState.NOT_ARRIVED);
             synchronized (diner)
@@ -40,7 +40,7 @@ public class DinerThread extends Thread {
 
             // wait for an table to sit down
             diner.setState(DinerState.WAIT_FOR_TABLE);
-            System.out.println(String.format("Diner#%d start.\n", diner.getID()));
+            System.out.println(String.format("Diner#%d start.", diner.getID()));
             synchronized (diner){
                 diner.wait(); // will be wake us by Clock thread. When TableScheduler let it to go.
             }
@@ -49,23 +49,14 @@ public class DinerThread extends Thread {
                 assert diner.getTable() != null;
             }
 
-//            synchronized (availTables)
-//            {
-//                while(!Thread.currentThread().isInterrupted() && availTables.size() <= 0){
-//                    availTables.wait();
-//                }
-//                diner.setTable(availTables.pollFirst());
-//            }
-
             // Wait for food to be served
             Order myOrder = diner.getOrder();
             synchronized (scheduler){
                 scheduler.submitOrder(myOrder);
             }
             myOrder.setState(OrderState.NOT_SCHEDULED);
-//            myOrder.setState(OrderState.NOT_SCHEDULED);
             diner.setState(DinerState.WAIT_FOR_FOOD);
-            System.out.println(String.format("Diner#%d get seated, submitted order#%d, on %s.\n",
+            System.out.println(String.format("Diner#%d get seated, submitted order#%d, on %s.",
                     diner.getID(), diner.getOrder().getOrderID(), diner.getTable()));
             synchronized (diner)
             {
@@ -76,7 +67,7 @@ public class DinerThread extends Thread {
 
             // Start eat
             diner.setState(DinerState.EATING);
-            System.out.println(String.format("Diner#%d start eating on %s.\n", diner.getID(), diner.getTable()));
+            System.out.println(String.format("Diner#%d start eating on %s.", diner.getID(), diner.getTable()));
             diner.setStartEatTime(clock.getCurrentTime());
             synchronized (diner){
                 while(!Thread.currentThread().isInterrupted() && !diner.isFinishedEat()){
@@ -90,7 +81,7 @@ public class DinerThread extends Thread {
                 diner.setTable(null);
             }
             diner.setState(DinerState.LEFT);
-            System.out.println(String.format("Diner#%d left.\n", diner.getID(), diner.getTable()));
+            System.out.println(String.format("Diner#%d left.", diner.getID(), diner.getTable()));
             this.isThreadFinished = true;
         } catch (InterruptedException e) {
             System.out.println(String.format("Dinner#%-4d get interrupted when %s.", diner.getID(), diner.getState().toString()));

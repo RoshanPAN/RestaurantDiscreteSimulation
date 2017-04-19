@@ -3,7 +3,7 @@ package com.lowson.Threads;
 import com.lowson.Role.*;
 import com.lowson.Scheduler.Schedule;
 import com.lowson.Util.Environment;
-import com.lowson.Util.RelativeTimeClock;
+import com.lowson.Role.RelativeTimeClock;
 
 import static com.lowson.Util.Environment.scheduler;
 
@@ -56,9 +56,9 @@ public class CookThread extends Thread{
                 // Try to get idle machine from scheduler and finish Task one by one
                 Machine curMachine = null;
                 Task curTask = null;
+                cook.setState(CookState.WAIT_FOR_MACHINE);
                 while(!this.isInterrupted() && !schedule.isAllTaskFinished()){
                     // Get a machine
-                    cook.setState(CookState.WAIT_FOR_MACHINE);
                     synchronized (scheduler){
                         for(Task task: cook.getSchedule().getTaskList()){
                             curMachine = scheduler.getAvailableMachine(task.getFood().getCorrespondingMachine());
@@ -74,19 +74,23 @@ public class CookThread extends Thread{
                             cook.wait();
                             continue;
                         }
+
+
                         // If get a machine, work on this machine until this food in current task is finished.
                         cook.setState(CookState.WORKING);
-                        System.out.println(String.format("Cook#%d work on %s for order#%d from diner#%d.",
-                                cook.getID(), curMachine, schedule.getOrder().getOrderID(),
-                                schedule.getOrder().getDinerID()));
                         cook.setStartWorkingTime(Environment.clock.getCurrentTime());
+                        System.out.println(String.format("Cook#%d work on %s for order#%d from diner#%d. %d",
+                                cook.getID(), curMachine, schedule.getOrder().getOrderID(),
+                                schedule.getOrder().getDinerID(), cook.getStartWorkingTime()));
+
                         while(!this.isInterrupted() &&
                                 //TODO How to decide the event ending time
-                                Environment.clock.getCurrentTime() < cook.getStartWorkingTime() + curTask.getProcessingTime()){
+                                Environment.clock.getCurrentTime() < cook.getStartWorkingTime() + curTask.getProcessingTime() - 1){
 //                            System.out.println(String.format("Cook#%d  %d<%d",
 //                                    cook.getID(), Environment.clock.getCurrentTime(), cook.getStartWorkingTime() + curTask.getProcessingTime()));
                             cook.wait();
                         }
+
                         // Release Machine and Remove task
                         synchronized (scheduler){
                             scheduler.releaseMachine(curMachine);
@@ -95,6 +99,12 @@ public class CookThread extends Thread{
 //                        System.out.println(String.format("[Cook finish current Task.] -Cook: %s. \n    -Machine:%s,   -Task:%s",
 //                                cook.toString(),curMachine.toString(), curTask.toString()));
                         cook.setStartWorkingTime(-1);
+                        synchronized (cook){
+                            if(cook.getSchedule().getTaskList().size() > 0){
+                                cook.wait();
+                            }
+                        }
+
                     }
                 }
 

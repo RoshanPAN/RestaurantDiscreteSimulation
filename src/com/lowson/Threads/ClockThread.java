@@ -1,11 +1,7 @@
 package com.lowson.Threads;
 
-import com.lowson.Role.Cook;
-import com.lowson.Role.CookState;
-import com.lowson.Role.Diner;
-import com.lowson.Role.DinerState;
+import com.lowson.Role.*;
 import com.lowson.Util.Environment;
-import com.lowson.Util.RelativeTimeClock;
 
 import static com.lowson.Util.Environment.tableScheduler;
 import static java.lang.Thread.sleep;
@@ -29,49 +25,20 @@ public class ClockThread implements Runnable{
         System.out.println(String.format("[Clock Thread Start] %s", clock));
         // Before end time, exists as a time provider.
         while(!isAllDinerFinished()){
-            /*
-                At the end of time = 0,     some cook finish cooking for an order and served food to diner,
-                At the start of time = 1,   some dinner is served and left.(some table is freed by dinner).
-                At the start of time = 0,   some dinner arrived, some dinners occupy tables.
-                                            some cook get order & get machine & start to work.
-             */
             System.out.println(">>>>>>>>>>>>[Clock]" + clock.toString());
             try {
-                updateCooks(CookState.WORKING);
-                while(!isAllThreadWaitingOrFinished()){
-//                    System.out.println("[Clock] Wait for other threads to be blocked.");
-                    sleep(5); // InterruptedException
-                }
-
-                updateCooks(CookState.WAIT_FOR_MACHINE);
-                while(!isAllThreadWaitingOrFinished()){
-//                    System.out.println("[Clock] Wait for other threads to be blocked.");
-                    sleep(5); // InterruptedException
-                }
-
-                updateCooks(CookState.IDLE);
-                while(!isAllThreadWaitingOrFinished()){
-//                    System.out.println("[Clock] Wait for other threads to be blocked.");
-                    sleep(5); // InterruptedException
-                }
-
-                updateDiners(DinerState.EATING);
-                while(!isAllThreadWaitingOrFinished()){
-//                    System.out.println("[Clock] Wait for other threads to be blocked.");
-                    sleep(5); // InterruptedException
-                }
-
+                // Diner arriving
                 updateDiners(DinerState.NOT_ARRIVED);
                 while(!isAllThreadWaitingOrFinished()){
 //                    System.out.println("[Clock] Wait for other threads to be blocked.");
                     sleep(5); // InterruptedException
                 }
 
-                // Scheduling about table
+                // Scheduling about table, let some diner get seated & submit order
                 synchronized (tableScheduler){
                     for(Diner d: tableScheduler.getScheduledDiners()){
                         synchronized (d){
-                            d.notifyAll();
+                            d.notifyAll();  // notify those diner(based on scheduling) who is wait for table
                         }
                     }
                 }
@@ -79,20 +46,39 @@ public class ClockThread implements Runnable{
 //                    System.out.println("[Clock] Wait for other threads to be blocked.");
                     sleep(5); // InterruptedException
                 }
-                updateDiners(DinerState.WAIT_FOR_FOOD);  // will be notified by WORKING cooks who finished.
+
+                // diner order submitted, waiting for food
+                updateDiners(DinerState.WAIT_FOR_FOOD);
                 while(!isAllThreadWaitingOrFinished()){
-//                    System.out.println("[Clock] Wait for other threads to be blocked.");
                     sleep(5); // InterruptedException
                 }
+
+                // Let working cook continue to work or finish
+                updateCooks(CookState.WORKING);
+                while(!isAllThreadWaitingOrFinished()){
+                    sleep(5); // InterruptedException
+                }
+
+                // Cook with schedule try to get a machine to work on.
+                updateCooks(CookState.WAIT_FOR_MACHINE);
+                while(!isAllThreadWaitingOrFinished()){
+                    sleep(5); // InterruptedException
+                }
+
+                // IDLE Cook try to get a schedule and machine
                 updateCooks(CookState.IDLE);
                 while(!isAllThreadWaitingOrFinished()){
-//                    System.out.println("[Clock] Wait for other threads to be blocked.");
                     sleep(5); // InterruptedException
                 }
+
+                // Dinners keep eating or leave
+                updateDiners(DinerState.EATING);
                 while(!isAllThreadWaitingOrFinished()){
-//                    System.out.println("[Clock] Wait for other threads to be blocked.");
                     sleep(5); // InterruptedException
                 }
+
+
+
                 clock.increment();
             } catch (InterruptedException e) {
                 e.printStackTrace();

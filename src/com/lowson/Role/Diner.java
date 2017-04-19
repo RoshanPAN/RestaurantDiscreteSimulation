@@ -40,7 +40,8 @@ public class Diner {
     public boolean isFinishedEat(){
 //        System.out.println(String.format("Is Finished Eat: %d < %d",
 //                Environment.clock.getCurrentTime(), startEatTime + eatDuration));
-        if(Environment.clock.getCurrentTime() >= startEatTime + eatDuration){
+        //TODO time of finishing eating.  e.g. start each @ 1min, eat 30min, then, end eat on 30min.
+        if(Environment.clock.getCurrentTime() >= startEatTime + eatDuration - 1){
             return true;
         }
         return false;

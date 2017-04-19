@@ -6,7 +6,7 @@ package com.lowson
 class MainTest extends GroovyTestCase {
     void test(){
         // evaluate invalid input
-        FileInputStream fis = new FileInputStream(new File("./resource/data4.txt"));
+        FileInputStream fis = new FileInputStream(new File("./resource/data1.txt"));
         System.setIn(fis)
         Main.main()
     }

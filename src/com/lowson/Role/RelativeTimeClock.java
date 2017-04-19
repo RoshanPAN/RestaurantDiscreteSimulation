@@ -1,4 +1,6 @@
-package com.lowson.Util;
+package com.lowson.Role;
+
+import com.lowson.Util.Environment;
 
 /**
  * The Relative time clock.
@@ -47,6 +49,6 @@ public class RelativeTimeClock{
 
     @Override
     public String toString(){
-        return String.format("%4d min\n", currentTime).toString();
+        return String.format("%4d min", currentTime).toString();
     }
 }

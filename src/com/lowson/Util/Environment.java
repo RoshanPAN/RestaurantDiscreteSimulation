@@ -1,9 +1,6 @@
 package com.lowson.Util;
 
-import com.lowson.Role.Cook;
-import com.lowson.Role.Diner;
-import com.lowson.Role.Machine;
-import com.lowson.Role.Table;
+import com.lowson.Role.*;
 import com.lowson.Scheduler.Scheduler;
 import com.lowson.Scheduler.SimpleScheduler;
 import com.lowson.Scheduler.TableScheduler;
