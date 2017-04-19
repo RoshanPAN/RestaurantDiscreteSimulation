@@ -42,6 +42,7 @@ public class ClockThread implements Runnable{
                         }
                     }
                 }
+
                 while(!isAllThreadWaitingOrFinished()){
 //                    System.out.println("[Clock] Wait for other threads to be blocked.");
                     sleep(5); // InterruptedException
@@ -76,8 +77,6 @@ public class ClockThread implements Runnable{
                 while(!isAllThreadWaitingOrFinished()){
                     sleep(5); // InterruptedException
                 }
-
-
 
                 clock.increment();
             } catch (InterruptedException e) {
