@@ -36,4 +36,11 @@ public class TableScheduler {
     public void releaseTable(Table table){
         availTables.offer(table);
     }
+
+    @Override
+    public String toString() {
+        StringBuilder b = new StringBuilder();
+        b.append(String.format("[Table Scheduler]\n    -Available Tables: %s.\n", availTables.toString()));
+        return b.toString();
+    }
 }

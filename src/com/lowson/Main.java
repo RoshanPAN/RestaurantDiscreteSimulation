@@ -7,21 +7,11 @@ import java.io.IOException;
 
 public class Main {
     public static void main(String[] args) {
-        //        LinkedList<Integer> taskList = new LinkedList<>();
-//        taskList.add(5);
-//        taskList.add(2);
-//        taskList.add(3);
-//        taskList.add(6);
-//        taskList.add(1);
-//        Collections.sort(taskList, (a, b) -> a > b ? -1 : (a == b ? 0 : 1));
-//        System.out.println(taskList.toString());
-
-
         //Step1: Environment Initialization from file
-        System.out.println("######## Step1: Environment Initialization from file######\n\n");
+        System.out.println("\n\n<<<<< Step1: Environment Initialization from file <<<<<");
         RestaurantInputReader reader = null;
         try {
-//            reader = new RestaurantInputReader("./resource/data1.txt");
+            System.out.println("Trying to read from stdin ...");
             reader = new RestaurantInputReader(System.in);
             Environment.initAllRoles(reader);
         } catch (IOException e) {
@@ -31,14 +21,13 @@ public class Main {
         }
 
         //Step2: Threads initialization
-        System.out.println("######## Step2: Threads initialization ######\n\n");
+        System.out.println("\n\n<<<<< Step2: Threads initialization <<<<<");
         Environment.initThreads();
 
-        System.out.println(Environment.scheduler);
         /*
         Step3: Start Simulation.
          */
-        System.out.println("######## Step3: Start Simulation. ######\n\n");
+        System.out.println("\n\n<<<<<  Step3: Start Simulation. <<<<<");
         Environment.startAllThreads();
 
         /*

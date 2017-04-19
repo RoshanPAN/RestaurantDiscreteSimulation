@@ -21,11 +21,11 @@ public class CookThread extends Thread{
 
 //    @Override
     public void run() {
-        System.out.println(String.format("[Cook Thread Start] %s", cook));
+//        System.out.println(String.format("Cook#%d start.", cook.getID()));
         Schedule schedule;
         boolean isSchedulingSuccessful;
         try{
-            System.out.println("[Cook Wait for Scheduling] " + cook.toString());
+            System.out.println(String.format("Cook#%d waiting to be scheduled.", cook.getID()));
             while(!this.isInterrupted()){
                 // Try to get a schedule from scheduler
                 schedule = null;
@@ -48,14 +48,16 @@ public class CookThread extends Thread{
                     }
                 }
                 assert isSchedulingSuccessful;
+                String.format("Cook#%d scheduled for order#%d from diner#%d. %s",
+                        cook.getID(), schedule.getOrder().getOrderID(), schedule.getOrder().getDinerID(),
+                        schedule.getOrder());
                 schedule.getOrder().setState(OrderState.PROCESSING);
 
-                // Try to get idel machine from scheduler and finish Task one by one
+                // Try to get idle machine from scheduler and finish Task one by one
                 Machine curMachine = null;
                 Task curTask = null;
                 while(!this.isInterrupted() && !schedule.isAllTaskFinished()){
                     // Get a machine
-                    System.out.println("[Cook Wait for Machine] " + cook.toString());
                     cook.setState(CookState.WAIT_FOR_MACHINE);
                     synchronized (scheduler){
                         for(Task task: cook.getSchedule().getTaskList()){
@@ -74,14 +76,15 @@ public class CookThread extends Thread{
                         }
                         // If get a machine, work on this machine until this food in current task is finished.
                         cook.setState(CookState.WORKING);
-                        System.out.println(String.format("[Cook Work on machine] -Cook: %s. \n    -Machine:%s,   -Task:%s",
-                                cook.toString(),curMachine.toString(), curTask.toString()));
+                        System.out.println(String.format("Cook#%d work on %s for order#%d from diner#%d.",
+                                cook.getID(), curMachine, schedule.getOrder().getOrderID(),
+                                schedule.getOrder().getDinerID()));
                         cook.setStartWorkingTime(Environment.clock.getCurrentTime());
                         while(!this.isInterrupted() &&
                                 //TODO How to decide the event ending time
                                 Environment.clock.getCurrentTime() < cook.getStartWorkingTime() + curTask.getProcessingTime()){
-                            System.out.println(String.format("Cook#%d  %d<%d",
-                                    cook.getID(), Environment.clock.getCurrentTime(), cook.getStartWorkingTime() + curTask.getProcessingTime()));
+//                            System.out.println(String.format("Cook#%d  %d<%d",
+//                                    cook.getID(), Environment.clock.getCurrentTime(), cook.getStartWorkingTime() + curTask.getProcessingTime()));
                             cook.wait();
                         }
                         // Release Machine and Remove task
@@ -89,15 +92,15 @@ public class CookThread extends Thread{
                             scheduler.releaseMachine(curMachine);
                         }
                         cook.setFinishedTask(curTask);
-                        System.out.println(String.format("[Cook finish current Task.] -Cook: %s. \n    -Machine:%s,   -Task:%s",
-                                cook.toString(),curMachine.toString(), curTask.toString()));
+//                        System.out.println(String.format("[Cook finish current Task.] -Cook: %s. \n    -Machine:%s,   -Task:%s",
+//                                cook.toString(),curMachine.toString(), curTask.toString()));
                         cook.setStartWorkingTime(-1);
                     }
                 }
 
                 // Finish
-                System.out.println(String.format("[Cook Finished & Restart] -Cook: %s. \n    -Machine:%s,   -Task:%s",
-                        cook.toString(),curMachine.toString(), curTask.toString()));
+                System.out.println(String.format("Cook#%d finishes preparation for order#%d from diner#%d.",
+                        cook.getID(),  schedule.getOrder().getOrderID(), schedule.getOrder().getDinerID()));
                 synchronized (scheduler){
                     //  1. Notify scheduler:
                     //      1) Update Word load
@@ -106,7 +109,6 @@ public class CookThread extends Thread{
                 }
                 // reset cook
                 cook.setSchedule(null);
-                // TODO order finished, Serve food to customer. Mark order as finished.
                 schedule.getOrder().setState(OrderState.FINISHED);
             }
         }catch (InterruptedException ie){

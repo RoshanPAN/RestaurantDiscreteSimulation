@@ -47,6 +47,6 @@ public class RelativeTimeClock{
 
     @Override
     public String toString(){
-        return String.format("Relative Time:%4d min\n", currentTime).toString();
+        return String.format("%4d min\n", currentTime).toString();
     }
 }

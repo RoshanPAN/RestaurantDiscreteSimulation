@@ -40,7 +40,7 @@ public class RestaurantInputReader {
         int num_coke = Integer.parseInt(tokenizer.nextToken());
         int num_sundane = Integer.parseInt(tokenizer.nextToken());
         Diner d = new Diner(arrival_time, num_burger, num_fry, num_coke, num_sundane);
-        System.out.println(d);
+//        System.out.println(d);
         return d;
     }
 }

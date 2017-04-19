@@ -15,8 +15,6 @@ import java.util.LinkedList;
  * Created by lenovo1 on 2017/3/25.
  */
 public class SimpleScheduler extends Scheduler{
-//    LinkedList<Order> orderPool;
-
     private SimpleScheduler(){
         super();
         orderPool = new LinkedList<>();
@@ -33,7 +31,6 @@ public class SimpleScheduler extends Scheduler{
     public static class SchedulerHolder{
         private final static SimpleScheduler scheduler = new SimpleScheduler();
     }
-
 
     // Core of scheduling logic.
     @Override
@@ -56,12 +53,6 @@ public class SimpleScheduler extends Scheduler{
         Food bottleNeck = getBottleNeck();
         Collections.sort((LinkedList<Order>)orderPool,
                             Comparator.comparingInt(a -> a.getOrderedFoodCnt(bottleNeck)));
-        System.out.println();
-        System.out.println();
-        System.out.println("Here is ordered result");
-        for(Order o: orderPool){
-            System.out.println(o);
-        }
         return ((LinkedList<Order>)this.orderPool).pollFirst();
     }
 
@@ -70,18 +61,14 @@ public class SimpleScheduler extends Scheduler{
     @Override
     protected void applyTaskOrderingLogic(LinkedList<Task> taskList){
         HashSet<Task> taskSet = new HashSet<>(taskList);
-        System.out.println(taskList);
-        System.out.println(workLoadStats);
         Collections.sort(taskList, (a, b) -> workLoadStats.get(a.getFood()) > workLoadStats.get(b.getFood()) ?
                         -1 : (workLoadStats.get(a.getFood()) == workLoadStats.get(b.getFood()) ? 0 : 1));
-        System.out.println(taskList);
-        System.out.println(workLoadStats);
     }
 
     @Override
     public String toString() {
         StringBuilder b = new StringBuilder();
-        b.append(String.format("[SimpleScheduler] \n    -Available Machine: %s, \n    -Order: %s",
+        b.append(String.format("[SimpleCookScheduler] \n    -Available Machine: %s, \n    -Order: %s",
                 availMachines.toString(), orderPool.toString()));
         b.append(String.format("\n    -WorkLoad: %s", workLoadStats.toString()));
         return b.toString();

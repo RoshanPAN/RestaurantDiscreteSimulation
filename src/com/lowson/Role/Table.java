@@ -19,7 +19,7 @@ public class Table {
     @Override
     public String toString() {
         StringBuilder b = new StringBuilder();
-        b.append(String.format("Table# %3d.", tableID));
+        b.append(String.format("Table#%d", tableID));
         return b.toString();
     }
 }

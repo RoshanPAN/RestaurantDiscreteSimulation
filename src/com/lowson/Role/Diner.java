@@ -38,9 +38,9 @@ public class Diner {
     }
 
     public boolean isFinishedEat(){
-        System.out.println(String.format("Is Finished Eat: %d < %d",
-                Environment.clock.getCurrentTime(), startEatTime + eatDuration));
-        if(Environment.clock.getCurrentTime() >= startEatTime + eatDuration - 1){
+//        System.out.println(String.format("Is Finished Eat: %d < %d",
+//                Environment.clock.getCurrentTime(), startEatTime + eatDuration));
+        if(Environment.clock.getCurrentTime() >= startEatTime + eatDuration){
             return true;
         }
         return false;
@@ -81,7 +81,7 @@ public class Diner {
     @Override
     public String toString(){
         StringBuilder builder = new StringBuilder();
-        builder.append(String.format("Diner#%3d:  -State: %s, -Arrived@ %3d min, -Ordered %s, -Table: %s",
+        builder.append(String.format("Diner#%3d:  -State: %s, -Arrived@ %3d min, -Table: %s -Ordered %s, ",
                 dinerID, state,arrivalTime, myOrder.toString(), table));
         return builder.toString();
     }

@@ -18,6 +18,14 @@ public class ClockThread implements Runnable{
 
     @Override
     public void run() {
+        while(!isAllThreadWaitingOrFinished()){
+            System.out.println("[Clock] Wait for other threads to be blocked.");
+            try {
+                sleep(30); // InterruptedException
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
         System.out.println(String.format("[Clock Thread Start] %s", clock));
         // Before end time, exists as a time provider.
         while(!isAllDinerFinished()){
@@ -27,17 +35,38 @@ public class ClockThread implements Runnable{
                 At the start of time = 0,   some dinner arrived, some dinners occupy tables.
                                             some cook get order & get machine & start to work.
              */
-            //TODO the order may not like below, and in this case, it will waste 1 minute.
+            System.out.println(">>>>>>>>>>>>[Clock]" + clock.toString());
             try {
                 updateCooks(CookState.WORKING);
-                updateCooks(CookState.WAIT_FOR_MACHINE);
-                updateCooks(CookState.IDLE);
-                sleep(5);
-                updateDiners(DinerState.EATING);
-                synchronized (Diner.dinerMap){
-                    updateDiners(DinerState.NOT_ARRIVED);
+                while(!isAllThreadWaitingOrFinished()){
+//                    System.out.println("[Clock] Wait for other threads to be blocked.");
+                    sleep(5); // InterruptedException
                 }
-                sleep(5);
+
+                updateCooks(CookState.WAIT_FOR_MACHINE);
+                while(!isAllThreadWaitingOrFinished()){
+//                    System.out.println("[Clock] Wait for other threads to be blocked.");
+                    sleep(5); // InterruptedException
+                }
+
+                updateCooks(CookState.IDLE);
+                while(!isAllThreadWaitingOrFinished()){
+//                    System.out.println("[Clock] Wait for other threads to be blocked.");
+                    sleep(5); // InterruptedException
+                }
+
+                updateDiners(DinerState.EATING);
+                while(!isAllThreadWaitingOrFinished()){
+//                    System.out.println("[Clock] Wait for other threads to be blocked.");
+                    sleep(5); // InterruptedException
+                }
+
+                updateDiners(DinerState.NOT_ARRIVED);
+                while(!isAllThreadWaitingOrFinished()){
+//                    System.out.println("[Clock] Wait for other threads to be blocked.");
+                    sleep(5); // InterruptedException
+                }
+
                 // Scheduling about table
                 synchronized (tableScheduler){
                     for(Diner d: tableScheduler.getScheduledDiners()){
@@ -45,19 +74,26 @@ public class ClockThread implements Runnable{
                             d.notifyAll();
                         }
                     }
-//                    Environment.availTables.notifyAll(); // arrived diner try to occupy empty table & submit order
+                }
+                while(!isAllThreadWaitingOrFinished()){
+//                    System.out.println("[Clock] Wait for other threads to be blocked.");
+                    sleep(5); // InterruptedException
                 }
                 updateDiners(DinerState.WAIT_FOR_FOOD);  // will be notified by WORKING cooks who finished.
-                sleep(5);
-                updateCooks(CookState.IDLE);
-                sleep(5);
-                while(!isAllThreadBlockedOrFinished()){
-                    System.out.println("[Clock] Wait for other threads to be blocked.");
-                    sleep(30); // InterruptedException
+                while(!isAllThreadWaitingOrFinished()){
+//                    System.out.println("[Clock] Wait for other threads to be blocked.");
+                    sleep(5); // InterruptedException
                 }
-                System.out.println(Environment.scheduler.availMachines.toString());
+                updateCooks(CookState.IDLE);
+                while(!isAllThreadWaitingOrFinished()){
+//                    System.out.println("[Clock] Wait for other threads to be blocked.");
+                    sleep(5); // InterruptedException
+                }
+                while(!isAllThreadWaitingOrFinished()){
+//                    System.out.println("[Clock] Wait for other threads to be blocked.");
+                    sleep(5); // InterruptedException
+                }
                 clock.increment();
-                System.out.println("[Clock]" + clock.toString());
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -83,23 +119,23 @@ public class ClockThread implements Runnable{
         return isAllFinished;
     }
 
-    private boolean isAllThreadBlockedOrFinished() {
+    private boolean isAllThreadWaitingOrFinished() {
         Thread.State s;
         for(DinerThread t: Environment.dinerThreadPool){
             s = t.getState();
-            if( s == Thread.State.BLOCKED || s == Thread.State.TERMINATED || s == Thread.State.WAITING) {
+            if( s == Thread.State.TERMINATED || s == Thread.State.WAITING) {
                 continue;
             }else{
-                System.out.println("[Not blocked] " + s.toString() + t.diner.toString());
+//                System.out.println("Wait for a while ... " + s.toString() +  "  " + t.diner.toString());
                 return false;
             }
         }
         for(CookThread t: Environment.cookThreadPool){
             s = t.getState();
-            if( s == Thread.State.BLOCKED || s == Thread.State.TERMINATED || s == Thread.State.WAITING) {
+            if(s == Thread.State.TERMINATED || s == Thread.State.WAITING) {
                 continue;
             }else{
-                System.out.println("[Not blocked] " + s.toString() + t.cook.toString());
+//                System.out.println("Wait for a while ... " + s.toString() +  "  " + t.cook.toString());
                 return false;
             }
         }

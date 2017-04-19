@@ -42,7 +42,7 @@ public class Environment {
         num_dinner = reader.readLineAsNum();
         num_table = reader.readLineAsNum();
         num_cook = reader.readLineAsNum();
-        System.out.println(String.format("[Environment] Diner:%d, Table:%d, Cook:%d. \n\n", num_dinner, num_table, num_cook));
+        System.out.println(String.format("[Environment Init] Diner:%d, Table:%d, Cook:%d.", num_dinner, num_table, num_cook));
         // Diner
         for(int i=0; i<num_dinner; i++){
             dinerList.add(reader.readLinesAsDiner());
@@ -67,16 +67,13 @@ public class Environment {
         }
 
         // Scheduler - nothing to do
+        System.out.print(Environment.tableScheduler);
+        System.out.println(Environment.scheduler);
 
         // Clock
         clock = RelativeTimeClock.getInstance();
         clock.initClock();
         assert  clock.getCurrentTime() == 0;
-
-        System.out.println(dinerList.size());
-        System.out.println(cookList.size());
-        System.out.println(TableScheduler.availTables.size());
-        System.out.println(clock);
 
     }
 

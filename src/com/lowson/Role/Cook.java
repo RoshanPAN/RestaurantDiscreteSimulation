@@ -70,7 +70,7 @@ public class Cook {
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
-        builder.append(String.format("Cook#%-3d: State=%s, schedule: %s", cookID, state, schedule));
+        builder.append(String.format("Cook#%-3d:                   State=%s, schedule: %s", cookID, state, schedule));
         return builder.toString();
     }
 }

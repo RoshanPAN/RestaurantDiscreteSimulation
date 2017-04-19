@@ -28,7 +28,7 @@ public class DinerThread extends Thread {
     @Override
     public void run() {
         try {
-            System.out.println(String.format("[Diner Thread Start] %s.\n", diner));
+            System.out.println(String.format("Diner%d start.\n", diner.getID()));
             // dinner not arrived
             diner.setState(DinerState.NOT_ARRIVED);
             synchronized (diner)
@@ -40,7 +40,7 @@ public class DinerThread extends Thread {
 
             // wait for an table to sit down
             diner.setState(DinerState.WAIT_FOR_TABLE);
-            System.out.println(String.format("[Diner Wait For Table].%s\n", diner));
+            System.out.println(String.format("Diner#%d start.\n", diner.getID()));
             synchronized (diner){
                 diner.wait(); // will be wake us by Clock thread. When TableScheduler let it to go.
             }
@@ -65,7 +65,8 @@ public class DinerThread extends Thread {
             myOrder.setState(OrderState.NOT_SCHEDULED);
 //            myOrder.setState(OrderState.NOT_SCHEDULED);
             diner.setState(DinerState.WAIT_FOR_FOOD);
-            System.out.println(String.format("[Diner Wait For Food]. %s\n", diner));
+            System.out.println(String.format("Diner#%d get seated, submitted order#%d, on %s.\n",
+                    diner.getID(), diner.getOrder().getOrderID(), diner.getTable()));
             synchronized (diner)
             {
                 while( !Thread.currentThread().isInterrupted() && !myOrder.isReady()){
@@ -75,7 +76,7 @@ public class DinerThread extends Thread {
 
             // Start eat
             diner.setState(DinerState.EATING);
-            System.out.println(String.format("[Diner Eating] %s.\n", diner));
+            System.out.println(String.format("Diner#%d start eating on %s.\n", diner.getID(), diner.getTable()));
             diner.setStartEatTime(clock.getCurrentTime());
             synchronized (diner){
                 while(!Thread.currentThread().isInterrupted() && !diner.isFinishedEat()){
@@ -89,7 +90,7 @@ public class DinerThread extends Thread {
                 diner.setTable(null);
             }
             diner.setState(DinerState.LEFT);
-            System.out.println(String.format("[Diner Left] %s.\n", diner));
+            System.out.println(String.format("Diner#%d left.\n", diner.getID(), diner.getTable()));
             this.isThreadFinished = true;
         } catch (InterruptedException e) {
             System.out.println(String.format("Dinner#%-4d get interrupted when %s.", diner.getID(), diner.getState().toString()));
